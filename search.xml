@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>Hello World</title>
+      <link href="/2019/11/27/hello-world/"/>
+      <url>/2019/11/27/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>kubernetes网络</title>
+      <link href="/2019/11/23/Kubernetes%E7%BD%91%E7%BB%9C/"/>
+      <url>/2019/11/23/Kubernetes%E7%BD%91%E7%BB%9C/</url>
+      
+        <content type="html"><![CDATA[<h3 id="Kubernete网络模型"><a href="#Kubernete网络模型" class="headerlink" title="Kubernete网络模型"></a>Kubernete网络模型</h3><ul><li>每一个pod都有唯一的一个IP</li><li>kubernetes节点上pod内都运行一个pause容器，此容器保留和保存由Pod中的所有容器共享的网络名称空间（netns），即使容器挂了，再重新创建一个新容器，PodIP也不会变</li><li>节点内通信<ul><li>每个节点上都有一个Root Netns名称空间，主网络接口eth0位于此Netns中，每个pod都有自己的网络，并且有一个虚拟以太网对将其连接到root netns。这基本上是一个网络对，一端在root netns网中，另一端在容器netns中.</li></ul></li></ul><blockquote><p>对节点上的所有Pod完成此操作。为了使这些Pod相互通信，使用了Linux以太网桥cbr0。Docker使用了一个类似的桥接器docker0,可以使用brctl show命令列出网桥。<br>  <img src="/img/pod_net1.png" alt="pod networknamespace"></p></blockquote><ul><li>pod1到pod2通信过程（如下图）:<ul><li>在离开pod1网的eth0并在进入根网veth-xxx。</li><li>将其传递给cbr0，后者使用ARP请求发现目的地，并说“谁拥有该IP？”</li><li>veth-yyy说具有该IP，因此网桥知道将数据包转发到何处。</li><li>数据包到达vethyyy，越过pipe-pair到达其pod2网络。</li></ul></li></ul><p>  <img src="/img/pod_net2.gif" alt="pod1 to pod2"></p><ul><li><p>节点间通信<br>假设pod1与pod4通信，如下图：</p><p><img src="/img/pod_pod3.gif" alt="pod1 to pod4"></p></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> kubernetes &amp;&amp; docker </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>你的深度思考能力，是如何一步步被毁掉的?</title>
+      <link href="/2019/10/28/%E4%BD%A0%E7%9A%84%E6%80%9D%E8%80%83%E8%83%BD%E5%8A%9B%E6%98%AF%E5%A6%82%E4%BD%95%E8%A2%AB%E6%AF%81%E6%8E%89%E4%BA%86/"/>
+      <url>/2019/10/28/%E4%BD%A0%E7%9A%84%E6%80%9D%E8%80%83%E8%83%BD%E5%8A%9B%E6%98%AF%E5%A6%82%E4%BD%95%E8%A2%AB%E6%AF%81%E6%8E%89%E4%BA%86/</url>
+      
+        <content type="html"><![CDATA[<ul><li><p>奶头乐：如何化解这80%的人和20%精英之间的冲突？如何消解这80%人口的多余精力和不满情绪，转移他们的注意力？当时的美国高级智囊布热津斯基认为，唯一的方法，是给这80%的人口，塞上一个「奶嘴」。<strong>让他们安于为他们量身订造的娱乐信息中，慢慢丧失热情、抗争欲望和思考的能力。</strong></p></li><li><p>奶头乐战略</p><ul><li><p>为了化解这80%普通的人和20%精英之间的冲突，某智囊提出：是给这80%的人口，塞上一个「奶嘴」。<strong>让他们安于为他们量身订造的娱乐信息中，慢慢丧失热情、抗争欲望和思考的能力。</strong></p></li><li><p>公众们将会在不久的将来，失去自主思考和判断的能力。最终他们会期望媒体为他们进行思考，并作出判断。</p></li></ul></li></ul><ol><li><p>发展<strong>发泄性的产业。</strong>具体而言，包括色情业、赌博业，发展暴力型影视剧、游戏，集中报道无休止的口水战、纠纷冲突，等等，让大众将多余的精力发泄出来。</p></li><li><p>发展<strong>满足性的产业。</strong>包括报道连篇累牍的无聊琐事——娱乐圈新闻、明星花边、家长里短，发展廉价品牌，各种小恩小惠的活动，以及偶像剧、综艺等大众化娱乐产业，让大众沉溺于享乐和安逸中，从而丧失上进心和深度思考能力。</p><p> <strong>我们创造了工具，工具反过来塑造我们，我们选择了怎样的媒体，媒体就用怎样的方式塑造我们。</strong></p></li></ol><ul><li>案例</li></ul><ol><li><p>一条 APP 推送，背后都是一个运营团队，群策群力，经过初稿、初审、复审等一堆环节，有着专业的消费者行为学作支撑，用尽各种文案技法，目的是什么呢？就是吸引你的注意力，点进去。</p></li><li><p>一款网络游戏，背后可能是几百人的团队，用最前沿的科技，最详尽的数据，精心打造 —— 目的是什么？为了创造一个虚拟空间，来消磨你的时间。目的就是为了让你沉浸进去，在观看的时候，忘掉时间的流逝。而反过来，无论是学习、阅读、思考、写作，这些事情，哪一件有着这么强大的阵势？将「触及成本」降到这么低？不存在的。这就是消费娱乐文化为我们创造的牢笼。而我们正心满意足地，一步步走进去。</p><p> <strong>一旦你习惯了这种「低成本、高回报」的刺激，你就很难去做那些「高投入」的事情了。</strong></p><p> <strong>习惯了轻而易举能获得大量愉悦感，你就会慢慢对这种愉悦感脱敏。</strong></p></li></ol><ul><li><p>危害：失去自主思考和判断的能力。最终他们会期望媒体为他们进行思考，并作出判断。</p></li><li><p>应对建议：</p><p> <strong>1. 拒绝低幼化的语言刺激</strong></p><pre><code>日常生活中，尽量抽出一定的时间，看深度的、优秀的书籍和文章，保持自己对语言的理解和运用能力。</code></pre><p> <strong>2. 拒绝抢夺注意力的低劣产品</strong></p><pre><code>拒绝那些肤浅的东西，多看有突破性的，不反智的，引发思考的，有诚意的，需要动脑子的 —— 《黑镜》就很不错，《权力的游戏》也还可以。</code></pre><p> <strong>3.为自己设定有意义的目标</strong></p><pre><code>请找到一件能够带给你长期收益和幸福感的事情，把它安排进每天的日程中。比如学习，可以帮助你对抗慵常、平凡、索然无味的日常生活。让你保持头脑的清醒。</code></pre></li></ul><blockquote><p>本文整理自微信公众号：L先生说，喜欢的可以搜搜关注公众号</p></blockquote>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 个人感悟 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>李永乐视频笔记</title>
+      <link href="/2019/10/28/%E6%9D%8E%E6%B0%B8%E4%B9%90%E8%A7%86%E9%A2%91%E7%AC%94%E8%AE%B0/"/>
+      <url>/2019/10/28/%E6%9D%8E%E6%B0%B8%E4%B9%90%E8%A7%86%E9%A2%91%E7%AC%94%E8%AE%B0/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p><strong>此篇是看李永乐老师视频总结的笔记，有兴趣的小伙伴可以在b站或者今日头条等社交媒体上关注李永乐老师</strong></p></blockquote><h1 id="幸存者偏差"><a href="#幸存者偏差" class="headerlink" title="幸存者偏差"></a>幸存者偏差</h1><blockquote><p><strong>过度关注“幸存了某些经历”的人事物，忽略那些没有幸存的（可能因为无法观察到），造成错误的结论。</strong></p></blockquote><ul><li>只考察了幸存者所满足的特征，从而得出结论</li><li>只看到了很多成功者所具有的相同特征，而没有看到具有同样特征的失败者</li><li>老物件很实用，这是因为留到现在还用的老物件，都是实用的，不实用的早就丢掉了</li></ul><h1 id="墨菲定律"><a href="#墨菲定律" class="headerlink" title="墨菲定律"></a>墨菲定律</h1><blockquote><p><strong>如果一件事可能发生，无论发生的可能性有多小，也一定会发生</strong></p></blockquote><ul><li>样本足够多，小概率事件就变成了必然事件</li><li>生活中案例：<ul><li>开车玩手机，如果形成习惯，总有一天会出事故的</li><li>飞机发生事故的概率1/200万，因为飞机飞行次数很多，所以总会有出事故的可能性</li><li>航天飞机虽然发射次数不多，但出事故的概率很高，远远高于飞机，这是因为航天飞机的组件很多，每个组件出问题，都会引起航天飞机的事故</li></ul></li></ul><h1 id="庞氏骗局"><a href="#庞氏骗局" class="headerlink" title="庞氏骗局"></a>庞氏骗局</h1><blockquote><p><strong>一种欺诈形式，它吸引投资者并利用后期投资者的资金向早期投资者支付利</strong></p></blockquote><ul><li>典型表现，利用新投资人的钱向老投资者支付利息，以制造赚钱的假象，进而骗取更多的投资</li><li>典型案例，就是传销<ul><li>宣传者宣称在货币流通过程中就会产生价值，其实，流通并不能产生价值，劳动才能产生价值。</li><li>传销基本没有任何的生产或者贸易，这种过程中会形成一种金字塔型结构，越下级的人越得不到钱，越上级的人越可以拿到很多钱</li></ul></li><li>如何认清这种骗局？<ul><li>提供不提供商品，或者商业模式？</li><li>利率高不高？</li><li>是否制造了投资紧迫感？</li></ul></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 生活 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>日常生活知识</title>
+      <link href="/2019/10/25/%E6%97%A5%E5%B8%B8%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/"/>
+      <url>/2019/10/25/%E6%97%A5%E5%B8%B8%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p><strong>此篇主要介绍日常生活中的一些知识</strong></p></blockquote><h2 id="关于防火知识"><a href="#关于防火知识" class="headerlink" title="关于防火知识"></a>关于防火知识</h2><h3 id="火灾"><a href="#火灾" class="headerlink" title="火灾"></a>火灾</h3><ul><li>火灾形成条件：氧气，温度，易燃物，以上三者称为火灾三角形</li><li>火灾发展过程：<ul><li>初期：燃烧</li><li>成长：可燃物会溶化，有的还会发生裂解，形成有毒物质，同时还会生成炭颗粒（烟），可能会生成一氧化碳</li><li>全盛期：温度升高到609摄氏度以上，会出现轰燃现象，导致起火面积迅速扩大</li></ul></li><li>爆燃现象：氧气驱动型的，密闭空间起火，伴随火势蔓延，氧气逐渐被消耗，生成碳和一氧化碳，如果此时密闭空间有大量氧气进入，如房间门被打开，此时，进入的氧气会与一氧化碳混合，会产生爆炸，随之产生冲击波，同时剧烈燃烧，应对灭火策略是首先对密闭空间进行降温处理<ul><li>在发生山体火灾时也可能发生爆燃现象，主要是气流变化而产生</li><li>爆燃产生条件：<ul><li>现场为通风不良的密闭空间</li><li>火势必须已维持了一段时间</li><li>必须有足够的空气引入火场</li><li>燃烧室内必需尚存有火源或环境温度高于一氧化碳燃点（609℃）</li></ul></li></ul></li></ul><h3 id="灭火方式"><a href="#灭火方式" class="headerlink" title="灭火方式"></a>灭火方式</h3><ul><li>油锅起火：不能用水灭火，可以采用隔离法灭火，如锅盖或者湿布盖住锅</li><li>酒精火，吃火锅时用的酒精，使用不规范或者用了不当产品充当酒精，可能在添加酒精时发生起火，添加酒精时最好远离锅，一旦发生火灾，导致人身上着火，应对措施是手捂住面部，身体倒地，在地上来回翻滚。</li><li>电器起火：不能用水灭火，但充电宝起火可用水，达到降低温度目的，进而灭火</li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 生活 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>dockerfile最佳实践</title>
+      <link href="/2019/10/23/dockerfile%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"/>
+      <url>/2019/10/23/dockerfile%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</url>
+      
+        <content type="html"><![CDATA[<h2 id="dockerfile最佳实践"><a href="#dockerfile最佳实践" class="headerlink" title="dockerfile最佳实践"></a>dockerfile最佳实践</h2><ul><li><p>Docker映像由只读层组成，每个只读层代表一个Dockerfile指令。这些层是堆叠的，每个层都是上一层的变化的增量。</p></li><li><p>减少构建时间:镜像的构建顺序很重要，当你向 Dockerfile 中添加文件，或者修改其中的某一行时，那一部分的缓存就会失效，该缓存的后续步骤都会中断，需要重新构建。所以优化缓存的最佳方法是把不需要经常更改的行放到最前面，更改最频繁的行放到最后面</p></li><li><p>只拷贝需要的文件，防止缓存溢出</p></li><li><p>最小化可缓存的执行层，每一个 RUN 指令都会被看作是可缓存的执行单元。太多的 RUN 指令会增加镜像的层数，增大镜像体积，run多个命令可以写在一起，形如：RUN apt-get update &amp;&amp; apt-get install -y</p></li><li><p>删除包管理工具的缓存，在每一个 RUN 指令的末尾删除缓存。如果你在下一条指令中删除缓存，不会减小镜像的体积。</p></li><li><p>使用更具体的标签，基础镜像尽量不要使用 latest 标签，在 Dockerfile 中最好指定基础镜像的具体标签</p></li><li><p>要排除与构建无关的文件，请使用.dockerignore文件。该文件支持类似于.gitignore文件的排除模式。</p></li><li><p>使用多阶段构建，多阶段构建可以大幅度减小最终镜像的大小</p></li><li><p>不要安装不必要的软件包，镜像构建过程中生成的临时文件可以在dockerfile中使用rm删除</p></li></ul><blockquote><p>参考文档：<a href="https://docs.docker.com/develop/develop-images/dockerfile_best-practices/" target="_blank" rel="noopener">https://docs.docker.com/develop/develop-images/dockerfile_best-practices/</a></p></blockquote>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> kubernetes &amp;&amp; docker </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>发布相关知识</title>
+      <link href="/2019/10/23/%E7%B3%BB%E7%BB%9F%E5%8F%91%E5%B8%83%E7%9B%B8%E5%85%B3/"/>
+      <url>/2019/10/23/%E7%B3%BB%E7%BB%9F%E5%8F%91%E5%B8%83%E7%9B%B8%E5%85%B3/</url>
+      
+        <content type="html"><![CDATA[<h3 id="预发布："><a href="#预发布：" class="headerlink" title="预发布："></a>预发布：</h3><ul><li>线上用户没有入口，只有内部工程师有入口</li><li>工程师配置host访问预发布服务器</li><li>支付等避免出现问题：打款配置1块钱，上线时要确认是否修改</li><li>发布：<ul><li>发布日期：周一，周二准备，周三发布，周四周五发现问题处理</li><li>火车头自动发布模型：定时运行，每一站例行检查，通过上车，不通过下车</li></ul></li><li>考量点：<ul><li>发布时保证缓存和数据库数据一致</li><li>对数据库操作，要锁住其他服务对数据库的修改，直到所有服务升级完再解除</li><li>观察服务日志和对应的功能点</li><li>观察线上环境日志</li></ul></li><li>app灰度发布平台：<ul><li>用户筛选：<ul><li>根据平台、版本、类别、城市</li><li>查找设备标识：IMEI openuuid token</li><li>手动上传设备标识</li></ul></li><li>发布任务<ul><li>将指定的版本app关联到指定的用户集合</li><li>支持定时</li></ul></li><li>任务管理<ul><li>管理已发布或者已下线的任务</li><li>能查看已发布任务的具体数据，如下载量等</li><li>任务进行过程中能够增加或减少目标用户集合</li><li>任务可以被暂停、上线</li></ul></li><li>版本控制<ul><li>判断设备版本号是否能升级，设备版本号要小于灰度的版本号</li><li>多个灰度版本之间能够升级</li></ul></li><li>分流模块<ul><li>判断设备是否是灰度版本目标用户</li></ul></li><li>下载模块 <ul><li>提供指定灰度版本app的下载更新地址</li></ul></li><li>灰度设计：<ul><li>协议：http+json</li></ul></li></ul></li><li>用户筛选方式：<ul><li>通过hive或者mysql数据库</li><li>前提：选择灰度目标用户时，用户量不超过百万，且都是活跃用户<ul><li>方案一：通过hive筛选，将各app日志在一个集群中，按统一格式进行清洗，查询时间较慢。筛选结果数据针对uid或者ios仍然需要再转换成token</li><li>方案二：将数据按规定格式写入mysql，数据实时或定时批量写入，定时删除</li></ul></li></ul></li><li>定时发布任务<ul><li>目的让用户在指定时间之后升级，未到时间不允许下载升级，同时在指定时间通过推送方式通知用户</li><li>方案一：发布任务后，直接将用户与灰度版本关联，并增加生效时间，同时在任务生效时，触发推送</li><li>方案二：在任务生效的指定时间，建立用户与灰度版本管理关系，同时触发推送</li></ul></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 技术 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>赠别寄语</title>
+      <link href="/2019/10/22/%E8%B5%A0%E5%88%AB%E5%AF%84%E8%AF%AD/"/>
+      <url>/2019/10/22/%E8%B5%A0%E5%88%AB%E5%AF%84%E8%AF%AD/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>某老师给毕业生的寄语</p></blockquote><h3 id="致最努力最认真的你"><a href="#致最努力最认真的你" class="headerlink" title="致最努力最认真的你"></a>致最努力最认真的你</h3><ul><li>恭喜你养成了成为社会精英的习惯，这是一生的财富，你会去到最好的环境，拥有令人羡慕的资源和机会，你的人生注定艰辛，因为环境和你的内心都不允许你懈怠，而世界文明的进步，也许靠的就是你们</li><li>你要学会放下虚荣，看淡竞争，更多的发现过程中的价值，更多的关注你学会了什么，而不是你赢了没有。</li><li>你还要学会休息，要知道人生除了吃饭睡觉，其余都是小事。</li></ul><h3 id="致比上不足比下有余的你"><a href="#致比上不足比下有余的你" class="headerlink" title="致比上不足比下有余的你"></a>致比上不足比下有余的你</h3><ul><li>恭喜你活成了孔夫子认为的最智慧的样子：中庸，你遵守规则，认真上进，你也享受生活，不负青春，家长嫌你不够刻苦，你也嫌弃自己怎么一到点就眼睛涩，别人挑灯夜战，让你怀疑自己的身躯太过平凡，不过，千万不要看低自己，因为攀比的阶梯永无止境，而目前这个环境的评价体系太单一，你的乐观，你的健康，你的好胃口，好睡眠，你的交际能力你的艺术特长，都会为你的人生助力。</li><li>若说你需要什么提醒，那就是切勿让中庸变平庸，也许你应该在积极主动一点，也许你应该在独特一点，再勇敢一点，必要的休息、享受无可厚非，无聊的消磨时间却该痛改，让你的人生再闪亮一点。</li></ul><h3 id="致“偏才”、“怪才”的你"><a href="#致“偏才”、“怪才”的你" class="headerlink" title="致“偏才”、“怪才”的你"></a>致“偏才”、“怪才”的你</h3><ul><li>毫无疑问，你很聪明，你还很桀骜不驯，你好像是社会这个大机体上的变异份子，与众人格格不入，如果你足够幸运，你有宽容你的父母，有赏识你的师长，让你有自由的生长空间，可是别忘记，这两个字—生长，长相怪异，但一定别忘记生长，而不论怎样生长，同样需要努力，别人在大路上奔跑，你在羊肠小路上跋涉，最终都会抵达心中的圣殿。</li></ul><h3 id="致迷茫，暂停脚步的你"><a href="#致迷茫，暂停脚步的你" class="headerlink" title="致迷茫，暂停脚步的你"></a>致迷茫，暂停脚步的你</h3><ul><li><p>我同意不是所有人都是读书的料，如果你有兄弟姐妹，也许你不会被选中走读书之路，而可能去踢球，去做生意，去学一门手艺。不幸的是，传统文化和独子家庭必需把宝压在你身上，在你不擅长的领域，你被竞争甩在了最后，却不敢也不能言弃，苦苦支撑。师长们说你懒惰，不懂事，其实你只是迷茫。我毫不怀疑，当你走进这一段被迫跟进的道路，发现你感兴趣也擅长的领域，你会逐渐变成你做梦也没想过要变成的学霸，只不过，你比别人慢了半拍，到那时，你会惊喜的发现，不会考试的你，恰恰能突破常规，老记不住知识点的你，却有杰出的动手能力，门门功课落后的你，却在江湖上呼朋唤友，如鱼得水。</p></li><li><p>当然，老师对你并非没有忧虑，我忧虑你太快说放弃，太容易找借口，太轻易就逃避责任，做事养成了马虎的习惯。。。。。 勤奋开始的晚了一些，没关系，但无论何时一定要开始，否则，你真就遂了那些看扁你的人的愿。</p><p>  <em>祝各位同学都有美好的人生</em></p></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 转载文 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>书单</title>
+      <link href="/2019/10/20/%E9%98%85%E8%AF%BB%E4%B9%A6%E5%8D%95-2019/"/>
+      <url>/2019/10/20/%E9%98%85%E8%AF%BB%E4%B9%A6%E5%8D%95-2019/</url>
+      
+        <content type="html"><![CDATA[<h1 id="阅读书单"><a href="#阅读书单" class="headerlink" title="阅读书单"></a>阅读书单</h1><h3 id="技术书籍"><a href="#技术书籍" class="headerlink" title="技术书籍"></a>技术书籍</h3><ul><li>kubernetes in action（在读）</li><li>kubernetes进阶实战</li><li>持续集成与持续部署实践</li><li>zabbix企业级分布式监控系统（第二版）</li></ul><h3 id="其它书"><a href="#其它书" class="headerlink" title="其它书"></a>其它书</h3><ul><li>暗时间</li><li>清醒思考的艺术</li><li>习惯的力量</li><li>反脆弱</li></ul><blockquote><p>随后会在本博客更新对应书籍的读书笔记</p></blockquote>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 个人感悟 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Nginx 重定向配置</title>
+      <link href="/2019/10/19/nginx%E4%B8%AD%E9%85%8D%E7%BD%AEredirect/"/>
+      <url>/2019/10/19/nginx%E4%B8%AD%E9%85%8D%E7%BD%AEredirect/</url>
+      
+        <content type="html"><![CDATA[<h2 id="Nginx-301重定向解决方案"><a href="#Nginx-301重定向解决方案" class="headerlink" title="Nginx 301重定向解决方案"></a>Nginx 301重定向解决方案</h2><h3 id="非www重定向到www"><a href="#非www重定向到www" class="headerlink" title="非www重定向到www"></a>非www重定向到www</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">listen 80;</span><br><span class="line">server_name ik8s.cc;</span><br><span class="line">rewrite ^/(.*)$ http://www.ik8s.cc/$1 permanent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="www重定向到非www"><a href="#www重定向到非www" class="headerlink" title="www重定向到非www"></a>www重定向到非www</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">listen 80;</span><br><span class="line">server_name www.ik8s.cc;</span><br><span class="line">rewrite ^/(.*)$ http://ik8s.cc/$1 permanent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="重定向单个页面"><a href="#重定向单个页面" class="headerlink" title="重定向单个页面"></a>重定向单个页面</h3><p>有时需要重定向单个页面，以避免产生404</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">...</span><br><span class="line">if ( $request_filename ~ oldpage/ ) &#123;</span><br><span class="line">rewrite ^ http://www.ik8s.cc/newpage/? permanent;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="目录重定向"><a href="#目录重定向" class="headerlink" title="目录重定向"></a>目录重定向</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">...</span><br><span class="line">if ( $request_filename ~ olddir/.+ ) &#123;</span><br><span class="line">rewrite ^(.*) http://www.ik8s.cc/newdir/$1 permanent;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="一个域名重定向到另一个域名"><a href="#一个域名重定向到另一个域名" class="headerlink" title="一个域名重定向到另一个域名"></a>一个域名重定向到另一个域名</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">...</span><br><span class="line">server_name example.com www.example.com; </span><br><span class="line">rewrite ^ $scheme://www.ik8s.cc$request_uri permanent;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="一个域名重定向到另一个域名-1"><a href="#一个域名重定向到另一个域名-1" class="headerlink" title="一个域名重定向到另一个域名"></a>一个域名重定向到另一个域名</h3><p> 只能重定向到新域名的主页</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">...</span><br><span class="line">server_name example.com www.example.com; </span><br><span class="line">rewrite ^ $scheme://www.ik8s.cc;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><blockquote><p>参考资料：<a href="https://atulhost.com/301-redirect-nginx" target="_blank" rel="noopener">https://atulhost.com/301-redirect-nginx</a></p></blockquote>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 技术 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>这些.....正在把我们变傻</title>
+      <link href="/2019/10/18/%E8%BF%99%E4%BA%9B%E6%AD%A3%E6%8A%8A%E6%88%91%E4%BB%AC%E5%8F%98%E5%82%BB/"/>
+      <url>/2019/10/18/%E8%BF%99%E4%BA%9B%E6%AD%A3%E6%8A%8A%E6%88%91%E4%BB%AC%E5%8F%98%E5%82%BB/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p><strong>之前看到一篇不错的文章，最近发现原来那个链接失效了，经过网络搜索，找到了这篇，在这里转载一下，做个记录</strong><br>   <strong>* 本文转载自互联网 *</strong></p></blockquote><h3 id="一、被驯化的花剌子模国王"><a href="#一、被驯化的花剌子模国王" class="headerlink" title="一、被驯化的花剌子模国王"></a>一、被驯化的花剌子模国王</h3><ul><li>“据野史记载，中亚古国花剌子模有一古怪的风俗，凡是给君王带来好消息的信使，就会得到提升，给君王带来坏消息的人则会被送去喂老虎。于是将帅出征在外，凡麾下将士有功，就派他们给君王送好消息，以使他们得到提升；有罪，则派去送坏消息，顺便给国王的老虎送去食物。”</li><li>现在，抖音等各类社交软件正在用非常高明的互联网人工智能技术，把我们训练成一个个“花剌子模国王”。</li></ul><ul><li>不知你有没有发现，当你看抖音时，只要你看过某一方面的内容，以后就会不断收到同一类型的内容，而你不感兴趣的，就不会再出现在你面前。于是，你的视野，永远被局限在一个非常狭窄的范围。我们关注的那一方面内容，就成了一口井，把我们围在中间。对于井外的一切，我们一无所知。</li></ul><h3 id="二、美国大选为什么赢的是特朗普？"><a href="#二、美国大选为什么赢的是特朗普？" class="headerlink" title="二、美国大选为什么赢的是特朗普？"></a>二、美国大选为什么赢的是特朗普？</h3><ul><li><p>哈佛大学教授凯斯·桑坦斯在《信息乌托邦》中指出：“信息传播中，公众自身的信息需求并非全方位的，公众只注意自己选择的东西和使自己愉悦的领域，久而久之，会将自身桎梏于像蚕茧一般的‘茧房’之中。”上一次的美国总统大选中，很多美国人就尝到了信息茧房的苦果。</p></li><li><p>有访谈发现：美国东部（华盛顿-纽约-波士顿一带）的教授、大学生、金融界人士，和西部（洛杉矶-旧金山-西雅图一带）的演艺界、互联网界、科技界的人士，基本上都认为希拉里稳赢，在他们看来，特朗普这个大老粗没有任何胜算。</p></li><li><p>而中部大平原的农场主、五大湖区的产业工人，却基本上都认为特朗普稳赢，在他们看来，希拉里这样的伪君子怎么可能会受到美国人欢迎呢。希拉里的拥趸们，早早就准备好了庆祝希拉里获胜的庆典和物品，就等着投票结果出来。</p></li><li><p>教授和学生们在教室里集体观看电视直播，等着最后的狂欢。结果，特朗普大获全胜。东西部的精英们全都懵了，他们呆立在教室里，久久不敢相信这个结果。他们无论如何也搞不懂，所有的人都喜欢希拉里，为什么赢的却是特朗普？</p></li><li><p>”南都观察家“特约作者冷哲的一篇文章提到了这个现象。他介绍道：一位名叫穆斯塔法的软件公司市场总监，是希拉里的忠实支持者，他的 Facebook 上充满了各种各样的支持希拉里的文章，他从来没有见过任何一篇支持特朗普的文章。他周边的朋友，也都是如此。所以他们全都坚定认为，特朗普的支持者就算是有，也是极少数。可是，当他去阅读美国总统大选期间的统计数字时才发现，就在 Facebook 上，特朗普的支持者就远超他的想象。有一篇名为《我为什么要投票给特朗普》的文章，在 Facebook 被分享了 150 万次，可他和他的朋友们全都没有听说过。穆斯塔法反思道：“我们的网络社交已经变成了一个巨大的回音室。在这里我们基本上适合有着类似观点的同伴讨论几乎一致的观点,完全未能深入理解其他社交圈子里面的观点。”</p></li></ul><h3 id="三、可怕的回音室"><a href="#三、可怕的回音室" class="headerlink" title="三、可怕的回音室"></a>三、可怕的回音室</h3><ul><li><p>试想一下，如果一个国家的外交观察家们也身处这些巨大的回音室之中，那是多么可怕的事情。</p></li><li><p>那就意味着，他们完全无法准确描述现实情况，更无法准确判断事态趋势。也就是说，他们的预测结果，可能根本与现实相反。这会给国家的外交政策带来巨大的灾难。</p></li><li><p>不要以为这是危言耸听。实际上，在美国的这次大选中，绝大部分国家的外交界和国关界的人士都预测错了——包括中国。</p></li><li><p>因为他们接触的，都是美国的政界、演艺界、知识分子、互联网企业家等精英分子。而南方州的红脖子，铁锈带的蓝领工人，他们根本就接触不到，也不屑于去接触。</p></li><li><p>预测错误的结果，是外交应对的措手不及。</p></li><li><p>例如，有的国家只准备了希拉里当选的祝贺词，结果要加班赶稿；有的国家提前派出了和希拉里友好而和特朗普不对付的庆祝团队，结果碰一鼻子灰；有的国家事先和希拉里团队打得火热，等发现特朗普当选，才发现连个牵线搭桥的人都没有……</p></li></ul><h3 id="四、一项决策需要我们综合多方信息判断"><a href="#四、一项决策需要我们综合多方信息判断" class="headerlink" title="四、一项决策需要我们综合多方信息判断"></a>四、一项决策需要我们综合多方信息判断</h3><ul><li><p>你可能会认为，只有面对这种国家大事，才需要关心这个问题，我们作为普通人，哪怕只沉迷于自己的那一口井，也不会有什么关系。</p></li><li><p>其实不然，我们日常生活中的很多决策，都需要我们综合多方面的信息去做判断。如果对世界的认识就有偏差，做出的决策，肯定会有错误。例如，你现在要做一个决定：要不要移民？如果你每天只关注微博上的某一类人，或者甚至是只翻墙看推特上的东西，你会认为，中国人民生活在水深火热之中，恨不得明天就买机票，一去不回，死后连骨灰都不要拿回来。（这当然是一种错误的观点）</p></li><li><p>而你要是恰好关注的是另一类人，或者每天只看新闻联播，你会认为，中国人民生活无限美好，超越美国指日可待，傻子才移民呢。（这当然也是一种错误的观点）显然，两方面的信息都是不准确的。中国既有不好的一面，也有好的一面。我们只有综合两方面的信息，才能做出一个更加准确的判断，使之更符合自己真实的需求。还有很多生活中、工作中的决策，都需要我们综合多方信息去判断。试举几个例子：生病了，要不要看中医？打疫苗，能不能打国产的？转基因食品能不能吃？现在要不要买房？</p></li><li><p>所有这些问题，都需要你对信息有相对较全面的判断。</p></li></ul><p>如果你只是看某一方面的信息，对另一方面的信息视而不见，或者永远怀着怀疑、批判的眼光去看与自己观点不同的信息，可能会做出偏颇的、对你不利的决策。</p><h3 id="五、被驯化的主人"><a href="#五、被驯化的主人" class="headerlink" title="五、被驯化的主人"></a>五、被驯化的主人</h3><ul><li><p>现在的互联网，人工智能推荐应用越来越广，越来越深入。每一个应用软件的背后，都有一个个庞大的团队，时时刻刻在研究我们，迎合我们，最后把我们封闭在一个个“茧房”里面。</p></li><li><p>上面举了穆斯塔法的例子，他在 Facebook 上，只能看到和自己观点相同的信息，看不到相反的信息，从而做出了错误的判断。</p></li><li><p>在中国，我们用的知乎、微博、微信等等，其实也一样。</p></li><li><p>我们只关注“三观正”的人。所谓“三观正”，就是和自己观点、价值观一致。对于那些不一致的人，我们要么永远都不会看见，要不已经取关或拉黑了。</p></li><li><p>抖音和今日头条的母公司“字节跳动”，是目前国内市场上人工智能推荐最先进的公司之一。所以抖音和头条，在制造“回音壁”这一问题上，也是最卓有成效的。</p></li><li><p>长期玩抖音的人，会越来越沉迷。</p></li><li><p>但是比这更可怕还有，是人工智能背后的算法推荐，它会让我们的认知越来越片面，人变得越来越傻。</p></li><li><p>这并不是抖音等各类社交软件的问题，而是我们人性决定的。</p></li><li><p>我们只喜欢看和自己观点一致的信息。而这些社交软件，只不过把我们不喜欢的，非常高效地屏蔽掉了。</p></li><li><p>它们取悦我们，也在驯化我们。起初，我们是主人；后来，我们是奴隶。</p></li><li><p>它们是刀子，而且是非常锋利的刀子。用得好，它们会大大提高我们切肉的效率；用得不好，会把我们自己割得遍体鳞伤。</p></li><li><p>工具本身没有问题，是我们在用错误的方式使用它们。</p></li><li><p>在这次全国政协会议上，政协委员白岩松提出，要警惕沉迷于“投你所好式”网络，并把它上升到“民族危险”的高度。</p></li><li><p>这并不是危言耸听。美国社会就已经被移动互联网时代深深割裂。自由主义和保守主义，成为互相不可逾越的鸿沟。政治家每天把大量精力陷入到党争之中，而不是去讨论具体的社会和经济政策。人与人之间的隔阂，也越来越深。在很多深蓝州（民主党大本营，一般反对特朗普），孩子们在学校不能表达支持特朗普的观点，否则就会被孤立，被歧视。</p></li><li><p>中国的网络上，也是如此。每到热点事件一出来，“五毛”和“公知”骂战必起，情绪化的渲染遍布全网，而理性的探讨却沉没深海。大家都忙着站队，对反方的观点，从来都是不屑一顾，最多只当成批判的靶子。所以，不管是左营还是右营，我们都会震惊于对方之愚蠢。我们打破脑袋也想不通，人怎么能无知、无耻到这种地步。最后，我们往往是骂一句“傻×”，然后取关或者拉黑了事，眼不见为净。其实，不是对方愚蠢，是我们把自己埋进了“茧房”，网络世界已经没有了理性探讨的土壤，所有人都变傻了。</p></li></ul><h3 id="六、如何避免变傻"><a href="#六、如何避免变傻" class="headerlink" title="六、如何避免变傻"></a>六、如何避免变傻</h3><ul><li><p>怎么才能避免抖音、微博、知乎等社交平台让我们越变越傻呢？</p></li><li><p>首先，我们要认识到，我们会因为使用这些信息渠道而变傻。</p></li><li><p>如果你觉得，“我每天都能在这上面学到很多新的知识，获得很多新的信息，我在变得更加渊博，更加智慧啊。”那就完蛋了。无知和傲慢是阻碍我们获得新知的最大障碍。你需要意识到，你每天看的这些信息，都是被一个巨大的过滤器滤过的，筛到你这里的时候，已经是很偏颇的一小部分了。</p></li><li><p>如果你以为，你之所见就是全世界，你就会常常被误导，并且被消费，被当成韭菜收割。</p></li><li><p>你常常会在热点事件出来时后，情绪激昂，然后过几天又被打脸。等下一次事件到来，你又重复这一过程。</p></li><li><p>你不断被意见领袖、营销号牵着鼻子走，他们让你笑你就笑，让你哭你就哭，你被他们卖掉还帮他们数钱，然后他们还在屏幕后面笑你“傻×”。</p></li><li><p>其次，认识到我们偏颇的选择会使我们变傻之后，我们就需要做出信息选择调整了。</p></li><li><p>万维钢在《别想说服我！》一文中，介绍了美国技术活动家 Johnson 在《信息食谱》书中提到的两条核心建议：</p><ol><li><p>我们要主动，刻意地去消费某些信息，哪怕我们不喜欢。</p></li><li><p>我们要去获取新的信息，而不是去为自己的旧观点寻找支撑。</p></li></ol></li><li><p>要做到这两条，其实并不难，但是也很难。</p></li><li><p>不难在于，它非常容易操作。</p></li><li><p>例如，在微博、今日头条上，你关注共青团中央的同时，也关注一下美国驻华大使馆；关注李开复的同时，也关注一下胡锡进；关注崔永元的同时，也关注一下司马南；关注布尔费末的同时，也关注一下李子暘……</p></li><li><p>总而言之，你的关注列表里，既要有公知，也要有五毛，既要有左派，又要有右派。如此一来，同样一件事情，你基本上总能得到两方面的信息。很难在于，你常常会很痛苦。因为你总会看到你特别不喜欢的信息，不爽到让你怀疑人生。</p></li><li><p>所以，如果你为了学习、了解信息、增进知识，它就不难。如果你纯粹是为了消遣，它就很难。但是，假如你想对这个世界多了解一点，未来的决策更妥当一点，生活更舒服一点，投资更合适一点，那就应该忍着恶心，克服困难，坚持做到这两点。</p></li><li><p>硅谷投资人王川在谈到如何做投资时说：要在各行各业，关心一些最高手的观点和思维模型，即使可能你不喜欢他，也要定期查看一下，知道他是怎么想的。这样可以八九不离十的抓住主要矛盾了。</p></li><li><p>最后，对于有更高求知需求的人，这里介绍几个非常好的，关于如何打败人工智能推荐的方法（对此不感兴趣的可直接跳到最后）。</p></li><li><p>这是杨滢博士总结的（她是清华出国的匹兹堡大学博士，曾在卡耐基梅隆大学做博士后研究，是知名的脑科学专家。）</p></li><li><p>杨滢说，想要打败推荐算法，需要两个因素：</p><ol><li><p>你需要有追求高品质内容的需求。</p></li><li><p>你需要随机取样人类各个领域的知识。</p></li></ol></li><li><p>据此，她提出了几个可马上操作的建议：</p><ol><li><p>有一个chrome应用叫stumble upon，装上以后，它会给你随机选择一些高质量网站，可能是你从来没有见过的东西。</p></li><li><p>你可以把维基百科（Wikipedia）设称自己的默认页，并且选择“随机浏览”模式（random wiki），这样每次打开浏览器就可以随机弹出一个wiki页面。</p></li><li><p>你可以去wolfram alpha上面点“给我惊喜”（surprise me），它会弹出一些有趣的知识</p></li><li><p>你可以装一个应用叫“一亿本书”（100 million books，在chrome上面），它会随机推荐一些书，直接链接到亚马逊书店，你可以看评论，非常有趣。</p></li></ol></li></ul><h3 id="七、不要当社交软件的奴隶"><a href="#七、不要当社交软件的奴隶" class="headerlink" title="七、不要当社交软件的奴隶"></a>七、不要当社交软件的奴隶</h3><ul><li><p>移动互联时代，信息就是最重要的资产。获取信息的能力，就是你最重要的能力。</p></li><li><p>如果你只能得到很少的信息，或者很偏颇的信息，你就会慢慢落后于他人。</p></li><li><p>世界很大、很美、有很多机会，请不要把自己局限在一口井、一个茧里面。</p></li><li><p>抖音和今日头条，都是很好的发明；手机和人工智能推荐，都是很好的工具。</p></li><li><p>但是，工具生产出来，应该被用于服务人类，而不是奴役人类。</p></li><li><p>请不要变成社交软件的奴隶，和移动互联时代的傻瓜。</p></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 转载文 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>关于学习技术相关问题</title>
+      <link href="/2019/10/11/%E5%85%B3%E4%BA%8E%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98/"/>
+      <url>/2019/10/11/%E5%85%B3%E4%BA%8E%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98/</url>
+      
+        <content type="html"><![CDATA[<h2 id="如何学习新技术的？"><a href="#如何学习新技术的？" class="headerlink" title="如何学习新技术的？"></a>如何学习新技术的？</h2><ul><li>学习是为了找到通往答案的路径和方法，是为了培养无师自通的能力</li></ul><h3 id="学习途径"><a href="#学习途径" class="headerlink" title="学习途径"></a>学习途径</h3><ul><li>通过搜索引擎，了解该技术基本原理是什么，具体应用场景是什么，解决什么问题？</li><li>学习资料: 国内外blog，官方文档，相关的经典书</li><li>学的时候，重视原理，体系化，实战应用，技术生态圈之间的关联</li></ul><h3 id="学习新技术的思考点"><a href="#学习新技术的思考点" class="headerlink" title="学习新技术的思考点"></a>学习新技术的思考点</h3><ul><li>技术出现的初衷是什么？</li><li>此技术为了要解决什么样的问题？</li><li>为什么那个问题要用这种解决方法？</li><li>能不能用别的方法解决？</li><li>能不能再简单一些？</li></ul><h2 id="对加班怎么看？"><a href="#对加班怎么看？" class="headerlink" title="对加班怎么看？"></a>对加班怎么看？</h2><ul><li>在特定时候，比如发版本、突然故障等， 但不支持低效率的常态加班。</li><li>一个人一天能专注的高效率时间很短，长时间加班会导致因长时间工作而导致一些技术问题，再用加班解决这些问题，从而陷入恶性循环，不能为了加班而加班。</li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 个人感悟 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>redis系列</title>
+      <link href="/2019/10/10/redis%E6%8C%81%E4%B9%85%E5%8C%96-2019/"/>
+      <url>/2019/10/10/redis%E6%8C%81%E4%B9%85%E5%8C%96-2019/</url>
+      
+        <content type="html"><![CDATA[<h1 id="redis的持久化"><a href="#redis的持久化" class="headerlink" title="redis的持久化"></a>redis的持久化</h1><blockquote><p>redis是一个内存数据库，就是将数据内容存储在内存中，这与传统关系型数据库直接将数据保存到硬盘中相比，数据读取速度要比传统数据库快很多。但保存在内存中有个缺点，就是一旦系统宕机或者重启，那么内存中的数据就会全部丢失。redis提供了将内存数据持久化到硬盘的方式。Redis 支持两种形式的持久化，一种是RDB快照（snapshotting），另外一种是AOF（append-only-file），本篇主要介绍redis持久化内容</p></blockquote><h3 id="RDB简介"><a href="#RDB简介" class="headerlink" title="RDB简介"></a>RDB简介</h3><ul><li>RDB是对redis中的数据执行周期性的持久化,把当前内存中的数据集快照写入磁盘，也就是 Snapshot 快照（数据库中所有键值对数据）。恢复时是将快照文件直接读到内存里。</li></ul><h3 id="RDB工作流程"><a href="#RDB工作流程" class="headerlink" title="RDB工作流程"></a>RDB工作流程</h3><pre><code>1.redis根据配置自己尝试去生成rdb快照文件2.fork一个子进程出来3.子进程尝试将数据dump到临时的rdb快照文件中4.完整的rdb快照文件生成之后，就替换之前的旧的快照文件</code></pre><h3 id="RDB触发方式"><a href="#RDB触发方式" class="headerlink" title="RDB触发方式"></a>RDB触发方式</h3><ul><li>自动触发<ul><li>配置文件内用save，格式为”save m n”,表示m秒内数据存在n次修改时，自动触发bgsave</li></ul></li><li>手动触发<ul><li>save 该命令会阻塞当前Redis服务器，执行save命令期间，Redis不能处理其他命令，直到RDB过程完成为止。显然该命令对于内存比较大的实例会造成长时间阻塞，这是致命的缺陷，为了解决此问题，Redis提供了第二种方式。</li><li>bgsave 执行该命令时，Redis会在后台异步进行快照操作，执行快照同时还可以响应客户端请求。具体操作是Redis进程执行fork操作创建子进程，RDB持久化过程由子进程负责，完成后自动结束。阻塞只发生在fork阶段，一般时间很短。redis内部所有rdb操作都是采用bgsave</li></ul></li></ul><h3 id="恢复数据"><a href="#恢复数据" class="headerlink" title="恢复数据"></a>恢复数据</h3><ul><li>将备份文件 (dump.rdb) 移动到 redis 安装目录并启动服务即可，redis就会自动加载文件数据至内存了。Redis 服务器在载入 RDB 文件期间，会一直处于阻塞状态，直到载入工作完成为止。</li></ul><h3 id="停止rdb"><a href="#停止rdb" class="headerlink" title="停止rdb"></a>停止rdb</h3><ul><li>在redis.conf 中，注释掉所有的 save 行来停用快照功能或者直接一个空字符串来实现停用：save “”</li><li>命令行配置<br><code>&gt;config set save &quot; &quot;</code></li></ul><h3 id="RDB优点"><a href="#RDB优点" class="headerlink" title="RDB优点"></a>RDB优点</h3><pre><code>1.RDB会生成多个数据文件，每个数据文件都代表某一时刻redis中的数据，此种方式，非常适合做冷备份，可以将这种完整的数据文件放到安全存储上面去，如s3或者阿里云的odps2.RDB对redis对外提供的读写服务，影响非常小，可以让redis保持高性能，因为redis主进程只需要fork一个子进程，让子进程执行磁盘io操作来进行rdb持久化3.相对于AOF持久化机制，直接基于RDB数据文件来重启和恢复redis进程更加快速</code></pre><h3 id="RDB缺点"><a href="#RDB缺点" class="headerlink" title="RDB缺点"></a>RDB缺点</h3><pre><code>1.想在redis故障时，尽可能丢失最少的数据，RDB没有AOF好，一般来说RDB的快照文件都是每隔5分钟，或者更长时间生成一次数据，一旦故障，会丢失最近5分钟的数据2.RDB每次在fork子进程来执行RDB快照时，如果数据文件很大，可能会导致对客户端提供的服务暂停数毫秒，甚至数秒3.最大缺点是不适合做第一优先的恢复方案，如果依赖RDB做第一恢复方案，数据丢失会比较多</code></pre><h3 id="AOF-简介"><a href="#AOF-简介" class="headerlink" title="AOF 简介"></a>AOF 简介</h3><pre><code>- AOF 是通过保存Redis服务器所执行的写命令来记录数据库状态。对redis中每条写入命令做日志，以append-only的模式写入一个日志文件中，在redis重启时，通过回放AOF日志中的写入命令来重建数据集- 现代操作系统中，写文件不是直接写入磁盘的，会先写 os cache，然后定期写入磁盘，aof会每个一段时间写数据到os cache，定期调用操作系统的fsync操作，将OS cache中数据刷入磁盘文件中，aof会导致日志持久化文件越来越大，当大到一定的时候，- AOF会做rewrite操作，rewrite操作会基于当时内存中的数据来构造一个更小的AOF文件，然后将旧的文件删除，此时新的AOF文件会丢失掉被LRU算法淘汰掉的那部分数据，redis会有限定的内存大小，到达最大值时，会使用LRU算法淘汰掉一部分数据</code></pre><h3 id="AOF的工作流程"><a href="#AOF的工作流程" class="headerlink" title="AOF的工作流程"></a>AOF的工作流程</h3><pre><code>1.redis fork一个子进程2.子进程基于当前内存中的数据，构建日志，开始向一个新的临时的AOF文件中写日志3.redis主进程接收到client新的写操作之后，在内存中写入日志，同时新的日志也继续写入旧的aof文件4.子进程写完新的日志文件之后，主进程将内存中的新日志再次追加到新的AOF文件中5.用新的日志文件替换掉旧的日志文件</code></pre><h3 id="AOF-配置"><a href="#AOF-配置" class="headerlink" title="AOF 配置"></a>AOF 配置</h3><pre><code>- 要开启 AOF 持久化方式，需要在配置文件中将 appendonly 修改为 yes。- appendfilename ：aof文件名，默认是&quot;appendonly.aof&quot;- appendfsync：aof持久化策略的配置；  1.no表示不执行fsync，由操作系统保证数据同步到磁盘，速度最快，但是不太安全；  2.always表示每次写入都执行fsync，以保证数据同步到磁盘，效率很低；  3.everysec表示每秒执行一次fsync，可能会导致丢失这1s数据。通常选择 everysec ，兼顾安全性和效率。</code></pre><h3 id="AOF-优点"><a href="#AOF-优点" class="headerlink" title="AOF 优点"></a>AOF 优点</h3><pre><code>1.可以更好的保护数据不丢失，一般AOF会每隔1秒钟，通过一个后台线程执行一次fsync操作，最多丢失1秒的数据2.AOF以append-only模式写入，所以没有磁盘寻址开销，写入性能非常高，而且文件不易破损，即使破损，也容易修复，破损也是文件尾部破损，redis提供有工具修复3.AOF文件即使过大，出现后台重写操作，也不会影响客户端的读写，因为rewrite log时，会进行压缩，创建出一份需要恢复的最小日志出来，在创建新日志的时候，老的日志文件还是照常写入,当新的merge后的日志文件ready的时候，在交换新老日志文件即可4.AOF日志文件通过非常可读的方式进行记录，此特性适合做灾难性的误删除的紧急恢复，比如用flushall清空了所有数据，只要此时后台rewrite还没有发生，就可以立即拷贝AOF文件，将最后一条执行的flushall命令删除，再将AOF日志文件放回去，通过恢复机制，自动恢复所有数据。</code></pre><h3 id="AOF-缺点"><a href="#AOF-缺点" class="headerlink" title="AOF 缺点"></a>AOF 缺点</h3><pre><code>1.对于同一份数据来说，AOF文件通常比RDB文件更大2.AOF开启后，支持的QPS会比RDB低，因为AOF一般配置每1秒fsync一次日志文件3.AOF发生过bug，进行数据恢复时，没有恢复一模一样的数据，类似AOF这种较为复杂的基于命令日志/merge/回放的方式，比基于RDB每次持久化一份数据的方式更脆弱一些，AOF为了避免rewrite过程导致的bug，每次rewrite并不是基于旧的指令日志进行merge的，而是基于当时内存中的数据进行指令的重新构建，这样健壮性更好些。4.数据恢复会比较慢</code></pre><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><pre><code>1.AOF也可以用于做冷备份，每隔一定时间去copy这份数据2.rdb做冷备份是由redis控制生成快照文件，AOF要写脚本，定时任务才能实现    3.RDB快照生成间隔周期要短，否则丢失的数据多，恢复时对客户端影响也大（数据大会导致客户端服务暂停一段时间）4.如果保证一条数据不丢，可以将fsync设置成每写一个命令，就fsync一次，但此时redis的QPS会大幅降低5.如果想让redis仅仅当做纯内存的缓存来使用，那么可以禁止RDB和AOF的持久化机制6.通过持久化机制，可以把redis内存中的数据持久化到磁盘上，然后可以将这些数据备份到别的地方去，比如阿里云7.如果同时使用了RDB和AOF两种持久化机制，那么在redis重启的时候，会使用AOF来重新构建数据，因为AOF中的数据更完整</code></pre><h2 id="redis企业级备份方案"><a href="#redis企业级备份方案" class="headerlink" title="redis企业级备份方案"></a>redis企业级备份方案</h2><pre><code>- 数据备份方案：    1.写定时任务脚本    2.每小时copy一份rdb到一个目录，仅仅保留最近48小时的备份    3.每天都保留一份当日的备份，保留最近一个月的备份    4.每次copy备份的时候，把旧备份删除    5.每天晚上将当前服务器上所有的数据备份发送一份到远程的云服务上去- 数据恢复：    1.如果是redis进程挂掉，重启redis，会基于aof恢复数据    2.如果redis所在的机器挂掉，重启机器，重启redis    3.如果最新的rdb和aof文件出现丢失或破损，可以基于当前机器最新的rdb数据副本进行恢复    4.如果有重大数据错误，比如程序存在bug，将redis数据污染了，可以选择某个更早的时间点，对数据进行恢复- 使用rdb数据备份恢复数据时，要关闭aof功能，否则，redis会基于aof恢复数据，而不是rdb</code></pre><blockquote><p>参考文档：<br/><br>1.<a href="https://www.cnblogs.com/ysocean/p/9114267.html" target="_blank" rel="noopener">https://www.cnblogs.com/ysocean/p/9114267.html</a> <br/><br>2.<a href="https://redis.io/topics/persistence" target="_blank" rel="noopener">https://redis.io/topics/persistence</a></p></blockquote>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 技术 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>深入剖析kubernetes系列之一</title>
+      <link href="/2019/09/29/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90kubernetes%E7%B3%BB%E5%88%97%E4%B9%8B%E4%B8%80/"/>
+      <url>/2019/09/29/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90kubernetes%E7%B3%BB%E5%88%97%E4%B9%8B%E4%B8%80/</url>
+      
+        <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>  从即日起开写本系列，此系列是依据极客时间《深入剖析kubernetes》专栏整理的笔记，本系列会持续更新。</p><h3 id="第一篇-容器技术基础之进程"><a href="#第一篇-容器技术基础之进程" class="headerlink" title="第一篇    容器技术基础之进程"></a>第一篇    容器技术基础之进程</h3><ul><li><p>进程可以看作是一个程序运行起来后的计算机执行环境的总和。</p></li><li><p>cgroup技术是用来制造约束的主要手段，用于限制资源。</p></li><li><p>namespace是用来修改进程视图的主要方法，用于实现对应资源等的隔离。</p></li><li><p>容器docker里面最开始运行的进程，是PID=1的进程，这个1号进程只是容器中虚拟出来的，在宿主机系统进程中的pid不是1，例如为100，这是被pid namespace机制做了隔离的结果，，使得容器内进程的pid被施了障眼法，看不到前面的99个进程，而自己就是pid=1。</p></li><li><p>Linux系统提供的namespace有：mount，uts，ipc，network，user，pid</p></li><li><p>docker实际上是在创建容器进程时，指定了一组namespace参数，容器只能看到当前namespace所限定的资源等，容器其实是一种特殊的进程</p></li><li><p>容器是单进程的，容器镜像里面集成了jdk，netstat，ping等，容器启动时里面java进程在运行，但在容器里面执行ping命令时，此时ping命令是不受docker控制的，所以单进程不是只能运行一个进程，而是只有一个进程是可控的，这里的可控是指exec进去之后启动的进程，不受控制，控制指它们的回收和生命周期管理，pod中的prestop，poststart是pid=1的进程的子进程，不能把pod的hook写成后台进程，因为容器中只有pid=1的进程是容器可控的。</p></li><li><p>镜像只是提供了一套镜像文件系统中的各种文件，而各种内核相关的模块或者特性支持，完全依赖于宿主机</p></li><li><p>虚拟机与容器的区别： 虚拟机是硬件级别（虚拟硬件）的隔离，而容器是进程的隔离</p></li><li><p>通过查看/proc/1/cgroup下的文件结构，可以判断目前是在容器里面还是在宿主机里</p></li><li><p>监控容器内jvm使用情况，可以使用一个sidecar容器来监控主容器内tomcat的jmx，并将其数据转换成prometheus拉取的格式</p></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> kubernetes &amp;&amp; docker </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>使用开源软件的正确姿势</title>
+      <link href="/2019/06/27/%E4%BD%BF%E7%94%A8%E5%BC%80%E6%BA%90%E8%BD%AF%E4%BB%B6%E6%AD%A3%E7%A1%AE%E5%A7%BF%E5%8A%BF/"/>
+      <url>/2019/06/27/%E4%BD%BF%E7%94%A8%E5%BC%80%E6%BA%90%E8%BD%AF%E4%BB%B6%E6%AD%A3%E7%A1%AE%E5%A7%BF%E5%8A%BF/</url>
+      
+        <content type="html"><![CDATA[<h2 id="使用开源软件的正确姿势"><a href="#使用开源软件的正确姿势" class="headerlink" title="使用开源软件的正确姿势"></a>使用开源软件的正确姿势</h2><h3 id="一、选择开源软件的考量点："><a href="#一、选择开源软件的考量点：" class="headerlink" title="一、选择开源软件的考量点："></a>一、选择开源软件的考量点：</h3><ul><li>是否满足业务</li><li>是否成熟</li><li>可以从以下几个方面考察是否成熟：<ul><li>版本号：一般建议除非特殊情况，否则不要选0.X版本的，至少选1.X版本的，版本号越高越好。</li><li>使用的公司数量：一般开源项目都会把采用了自己项目的公司列在主页上，公司越大越好，数量越多越好。</li><li>社区活跃度：看看社区是否活跃，发帖数、回复数、问题处理速度等。</li></ul></li><li>运维能力</li><li>可以从以下几个方案去考察运维能力：<ul><li>开源方案日志是否齐全：有的开源方案日志只有寥寥启动停止几行，出了问题根本无法排查。</li><li>开源方案是否有命令行、管理控制台等维护工具，能够看到系统运行时的情况。</li><li>开源方案是否有故障检测和恢复的能力，例如告警、倒换等。</li></ul></li></ul><h3 id="二、使用开源软件的考量点："><a href="#二、使用开源软件的考量点：" class="headerlink" title="二、使用开源软件的考量点："></a>二、使用开源软件的考量点：</h3><ul><li><p>深入研究，仔细测试</p></li><li><p>可以从如下几方面进行研究和测试：</p><ul><li>通读开源项目的设计文档或者白皮书，了解其设计原理；</li><li>核对每个配置项的作用和影响，识别出关键配置项；</li><li>进行多种场景的性能测试；</li><li>进行压力测试，连续跑几天，观察cpu、内存、磁盘io等指标波动；</li><li>进行故障测试：kill，断电、拔网线、重启100次以上、倒换等。</li></ul></li><li><p>小心应用，灰度发布</p><ul><li>再怎么深入的研究，再怎么仔细的测试，都只能降低风险，但不可能完全覆盖所有线上场景。</li><li>先在非核心的业务上用，然后有经验后慢慢扩展。</li></ul></li><li><p>做好应急，以防万一</p><ul><li>对于重要的业务或者数据，使用开源项目时，最好有另外一个比较成熟的方案做备份，尤其是数据存储。例如：如果要用MongoDB或者Redis，可以用MySQL做备份存储。这样做虽然复杂度和成本高一些，但关键时刻能够救命！</li></ul></li></ul><h3 id="三、基于开源项目做开发的考量点："><a href="#三、基于开源项目做开发的考量点：" class="headerlink" title="三、基于开源项目做开发的考量点："></a>三、基于开源项目做开发的考量点：</h3><ul><li><p>保持纯洁，加以包装</p><ul><li><p>不要改动原系统，而是要开发辅助系统: 监控，报警，负载均衡，管理等。</p></li><li><p>给开源项目提需求或者bug</p></li></ul></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 技术 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>虚拟机磁盘误删除恢复故障</title>
+      <link href="/2019/06/20/%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%A3%81%E7%9B%98%E8%AF%AF%E5%88%A0%E9%99%A4%E6%81%A2%E5%A4%8D/"/>
+      <url>/2019/06/20/%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%A3%81%E7%9B%98%E8%AF%AF%E5%88%A0%E9%99%A4%E6%81%A2%E5%A4%8D/</url>
+      
+        <content type="html"><![CDATA[<ul><li><p>最近一台存放重要文件的Windows7虚拟机磁盘文件被误删除，导致虚拟机无法启动，只留下两个文件，test-flat.vmdk和test-000001-delta.vmdk,启动虚拟机时报错，信息如下：the file specified is not a virtual disk。无法打开磁盘“/vmfs/volumes4db4f346-a928774c-50af-3c4a92731f32/test/,test-flat.vmdk”或其所依赖的快照磁盘之一。</p></li><li><p>看到此景，这可咋办，上网查阅相关资料，终于找到了解决办法.</p></li><li><p>flat.vmdk文件：这是个默认虚拟磁盘数据文件，创建于你添加虚拟硬盘驱动到虚拟机时，而不是RDM。当使用厚磁盘时，这个文件的大小相当于你创建虚拟硬盘驱动时所指定的大小。</p></li><li><p>delta.vmdk文件：这个虚拟磁盘数据文件只用于创建虚拟机快照时。当创建了快照，对原始flat.vmdk的所有写入都停止，并变成只读；然后这些对虚拟磁盘的更改将写入delta文件。这些文件的初始大小是16MB，然后随着对虚拟机虚拟硬盘的更改需要而以16MB的速度增长。因为这些文件是虚拟磁盘所作更改的位图，一个单一delta.vmdk文件不能超过原始flat.vmdk文件的大小。每为虚拟机创建一个快照就会生成一个delta文件，并且它们的文件名以数字递增（如test-000001-delta.vmdk, test-000002-delta.vmdk）。当快照融合到原始–flat.vmdk文件后再删除时，这些文件将自动删除。</p></li><li><p>综上所述，可以确定数据都还在，开始进行数据恢复工作,步骤如下：</p></li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1.创建一台同样配置的虚拟机，不创建磁盘，命名虚拟机名字为test1.</span><br><span class="line"></span><br><span class="line">2.ssh登录到esxi宿主机，默认ssh服务没开启，首先开启ssh服务，具体方法可从网络上搜索，ssh登录，结果悲剧了，不能密码登录，被前任负责人设置了秘钥登录，找不到秘钥了，唉！！！！算了，秘钥问题等过后在解决，先使用client工具登录vcenter服务器，转移<span class="built_in">test</span>-flat.vmdk和<span class="built_in">test</span>-000001-delta.vmdk至另外一台esxi服务器的一台新建虚拟机(创建时不创建磁盘)中.</span><br><span class="line"></span><br><span class="line">3.开启ssh服务，登录至此esxi宿主机，查找<span class="built_in">test</span>-flat.vmdk所在的目录并进入其所在目录中</span><br><span class="line"></span><br><span class="line"><span class="comment"># find / -name 'test-flat.vmdk</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ls -la *vmdk   查看vmdk文件大小，下面要用到(FILE_SIZE)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># vmkfstools -c FILE_SIZE -a lsilogic test1-flat.vmdk</span></span><br></pre></td></tr></table></figure><ul><li><p>启动虚拟机，ok，成功启动，进去查看要找的重要文件，发现是7月份的，不是最新的，7月份做过一次快照，此时的文件内容就是做快照之前的内容，做快照之后到故障期间的文件内容还没找回来，好在存在test-000001-delta.vmdk，这个文件内存储了快照之后的变化的文件内容，查看大小在5G左右</p></li><li><p>虚拟机关机，新创建一个快照，将test-000001-delta.vmdk重命名，覆盖新创建的快照的数据文件（delta.vmdk.文件）</p></li><li><p>开机启动虚拟机，发现要找的文件都在，已经成功全部恢复</p></li></ul><p>参考文档:(<a href="http://www.cnblogs.com/sammyliu/p/5661085.html" target="_blank" rel="noopener">http://www.cnblogs.com/sammyliu/p/5661085.html</a>)</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 技术 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
+</search>
