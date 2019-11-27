@@ -316,7 +316,7 @@
                 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11"></script>
                 <script>
                     var typed = new Typed("#subtitle", {
-                        strings: ['从来没有真正的绝境, 只有心灵的迷途','Never really desperate, only the lost of the soul'],
+                        strings: ['毁掉我们的可能不是我们所憎恨的东西，而恰恰是我们所热爱的东西','用不确定的思维去看待这个世界，接受随机性，这个世界并没有固定的标准'],
                         startDelay: 300,
                         typeSpeed: 100,
                         loop: true,
@@ -617,34 +617,35 @@
         <div class="card">
 
             
+            <link rel="stylesheet" href="/libs/gitalk/gitalk.css">
+<link rel="stylesheet" href="/css/my-gitalk.css">
 
-            
-
-            
-            <div class="disqus-card card" data-aos="fade-up">
-    <div id="disqus_thread" class="card-content">
-        <noscript>Please enable JavaScript to view the
-            <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
-        </noscript>
+<div class="card gitalk-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
     </div>
+    <div id="gitalk-container" class="card-content"></div>
 </div>
 
-<script type="text/javascript">
-    disqus_config = function () {
-        this.page.url = 'https://www.ik8s.cc/friends/index.html';
-        this.page.identifier = '/friends/index.html';
-        this.page.title = 'friends';
-    };
-    let disqus_shortname = 'myblog-2003';
+<script src="/libs/gitalk/gitalk.min.js"></script>
+<script>
+    let gitalk = new Gitalk({
+        clientID: '4afd5999b76d76a5484b',
+        clientSecret: 'cd64307cd3f8186bc1818bd427bb3cacff279a40',
+        repo: 'talk.github.io',
+        owner: 'yy20031205',
+        admin: "yy20031205",
+        id: '2019-11-25T09-38-42',
+        distractionFreeMode: false  // Facebook-like distraction free mode
+    });
 
-    (function () { // DON'T EDIT BELOW THIS LINE
-        let d = document, s = d.createElement('script');
-        // 如：s.src = 'https://blinkfox.disqus.com/embed.js';
-        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
+    gitalk.render('gitalk-container');
 </script>
+            
+
+            
+
             
 
             
