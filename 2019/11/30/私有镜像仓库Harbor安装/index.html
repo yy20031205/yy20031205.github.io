@@ -4,13 +4,13 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="赠别寄语, Jemmy yang Blog">
-    <meta name="description" content="
-某老师给毕业生的寄语
-
-致最努力最认真的你
-恭喜你养成了成为社会精英的习惯，这是一生的财富，你会去到最好的环境，拥有令人羡慕的资源和机会，你的人生注定艰辛，因为环境和你的内心都不允许你懈怠，而世界文明的进步，也许靠的就是你们
-你要学会放下">
+    <meta name="keywords" content="企业级私有仓库Harbor安装部署, Jemmy yang Blog">
+    <meta name="description" content="系统环境操作系统：CentOS 7.6
+IP地址：10.0.11.20
+域名： reg.ik8s.cc
+安装要求：
+  1. 做好服务器时间同步
+  2. 因为是在内网使用，所以需在要访问reg.ik8s.cc的主机上配置hosts解析，或">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -18,7 +18,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>赠别寄语 | Jemmy yang Blog</title>
+    <title>企业级私有仓库Harbor安装部署 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -245,13 +245,13 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/20.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        赠别寄语
+                        企业级私有仓库Harbor安装部署
                     </div>
                 </div>
             </div>
@@ -272,13 +272,9 @@
             <div class="row tag-cate">
                 <div class="col s7">
                     
-                    <div class="article-tag">
-                        
-                            <a href="/tags/%E8%BD%AC%E8%BD%BD%E6%96%87/">
-                                <span class="chip bg-color">转载文</span>
-                            </a>
-                        
-                    </div>
+                          <div class="article-tag">
+                            <span class="chip bg-color">无标签</span>
+                          </div>
                     
                 </div>
                 <div class="col s5 right-align">
@@ -290,7 +286,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2019-10-22
+                    2019-11-30
                 </div>
                 
 
@@ -299,14 +295,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    900
+                    336
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    3 分
+                    1 分
                 </div>
                 
 				
@@ -322,28 +318,113 @@
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <blockquote>
-<p>某老师给毕业生的寄语</p>
+                <h3 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h3><pre><code>操作系统：CentOS 7.6
+IP地址：10.0.11.20
+域名： reg.ik8s.cc
+安装要求：
+  1. 做好服务器时间同步
+  2. 因为是在内网使用，所以需在要访问reg.ik8s.cc的主机上配置hosts解析，或者配置内网dns进行域名解析</code></pre><h3 id="安装docker"><a href="#安装docker" class="headerlink" title="安装docker"></a>安装docker</h3><pre class=" language-shell"><code class="language-shell">
+   $ sudo yum install -y yum-utils openssl openssl-devel
+   $ sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+   $ sudo yum makecache
+   $ sudo yum install docker-ce
+</code></pre>
+<h3 id="配置docker-信任我们搭建的镜像仓库，否则提交镜像会报错"><a href="#配置docker-信任我们搭建的镜像仓库，否则提交镜像会报错" class="headerlink" title="配置docker(信任我们搭建的镜像仓库，否则提交镜像会报错)"></a>配置docker(信任我们搭建的镜像仓库，否则提交镜像会报错)</h3><pre class=" language-shell"><code class="language-shell">
+$ sudo vim /etc/docker/daemon.json
+
+{
+   "insecure-registries":["reg.ik8s.cc"]
+}</code></pre>
+<h3 id="安装docker-compose"><a href="#安装docker-compose" class="headerlink" title="安装docker compose"></a>安装docker compose</h3><pre class=" language-shell"><code class="language-shell">$ sudo curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+$ sudo chmod +x /usr/local/bin/docker-compose
+$ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+</code></pre>
+<h3 id="安装Harbor"><a href="#安装Harbor" class="headerlink" title="安装Harbor"></a>安装Harbor</h3><ul>
+<li>安装包下载</li>
+</ul>
+<pre class=" language-shell"><code class="language-shell">
+$ wget https://github.com/goharbor/harbor/releases/download/v1.9.3/harbor-offline-installer-v1.9.3.tgz
+$ sudo tar xf harbor-offline-installer-v1.9.3.tgz
+</code></pre>
+<ul>
+<li>创建https证书<br>此处使用自签的证书</li>
+</ul>
+<pre class=" language-shell"><code class="language-shell">$ sudo mkdir /etc/harbor/ssl && cd /etc/harbor/ssl
+$ sudo openssl genrsa -out ca.key 4096
+$ sudo openssl req -x509 -new -nodes -sha512 -days 3650\
+               -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=reg.ik8s.cc" -key ca.key -out ca.crt
+$ sudo openssl genrsa -out reg.ik8s.cc.key 4096
+$ sudo openssl req -sha512 -new \
+               -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=reg.ik8s.cc.com" \
+               -key reg.ik8s.cc.key \
+               -out reg.ik8s.cc.csr
+$ sudo cat > v3.ext <<-EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1=reg.ik8s.cc
+DNS.2=ik8s.cc
+DNS.3=hostname
+EOF
+$ sudo openssl x509 -req -sha512 -days 3650 \
+               -extfile v3.ext \
+               -CA ca.crt -CAkey ca.key -CAcreateserial \
+               -in reg.ik8s.cc.csr \
+               -out reg.ik8s.cc.crt
+$ sudo openssl x509 -inform PEM -in reg.ik8s.cc.crt -out reg.ik8s.cc.cert</code></pre>
+<ul>
+<li>为Harbor配置服务端证书和key<ul>
+<li>为docker配置证书，key和CA</li>
+<li>Docker守护程序将.crt文件解释为CA证书，并将.cert文件解释为客户端证书。因此要做一下证书转换<pre class=" language-shell"><code class="language-shell">$ sudo openssl x509 -inform PEM -in reg.ik8s.cc.crt -out reg.ik8s.cc.cert
+$ sudo mkdir -p /etc/docker/certs.d/reg.ik8s.cc/
+$ sudo cp reg.ik8s.cc.cert /etc/docker/certs.d/reg.ik8s.cc/
+$ sudo cp reg.ik8s.cc.key /etc/docker/certs.d/reg.ik8s.cc/
+$ sudo cp ca.crt /etc/docker/certs.d/reg.ik8s.cc/</code></pre>
+</li>
+</ul>
+</li>
+<li>配置Harbor配置文件</li>
+</ul>
+<pre class=" language-shell"><code class="language-shell"># vim harbor.yml
+
+hostname: reg.ik8s.cc
+# http related config
+http:
+  # port for http, default is 80. If https enabled, this port will redirect to https port
+  port: 80
+# https related config
+https:
+# https port for harbor, default is 443
+  port: 443
+# The path of cert and key files for nginx
+  certificate: /etc/harbor/ssl/reg.ik8s.cc.crt
+  private_key: /etc/harbor/ssl/reg.ik8s.cc.key</code></pre>
+<ul>
+<li>使用prepare脚本进行配置</li>
+</ul>
+<pre class=" language-shell"><code class="language-shell">$ sudo ./prepare
+</code></pre>
+<ul>
+<li>启动服务(如果运行了docker compose服务需要先停止)</li>
+</ul>
+<pre class=" language-shell"><code class="language-shell">
+$ sudo docker-compose up -d
+</code></pre>
+<h3 id="访问服务"><a href="#访问服务" class="headerlink" title="访问服务"></a>访问服务</h3><ul>
+<li>浏览器访问：<a href="https://10.0.11.20" target="_blank" rel="noopener">https://10.0.11.20</a></li>
+<li>默认用户名和密码(生产环境要修改)：<ul>
+<li>user: admin</li>
+<li>passwd: Harbor12345</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>参考文档：<br>1.<a href="https://yq.aliyun.com/articles/110806?spm=5176.8351553.0.0.63dd1991ZH3AH5" target="_blank" rel="noopener">https://yq.aliyun.com/articles/110806?spm=5176.8351553.0.0.63dd1991ZH3AH5</a><br>2.<a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md" target="_blank" rel="noopener">https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md</a><br>3.<a href="https://github.com/goharbor/harbor/blob/master/docs/configure_https.md" target="_blank" rel="noopener">https://github.com/goharbor/harbor/blob/master/docs/configure_https.md</a><br>4.<a href="https://docs.docker.com/compose/install/" target="_blank" rel="noopener">https://docs.docker.com/compose/install/</a></p>
 </blockquote>
-<h3 id="致最努力最认真的你"><a href="#致最努力最认真的你" class="headerlink" title="致最努力最认真的你"></a>致最努力最认真的你</h3><ul>
-<li>恭喜你养成了成为社会精英的习惯，这是一生的财富，你会去到最好的环境，拥有令人羡慕的资源和机会，你的人生注定艰辛，因为环境和你的内心都不允许你懈怠，而世界文明的进步，也许靠的就是你们</li>
-<li>你要学会放下虚荣，看淡竞争，更多的发现过程中的价值，更多的关注你学会了什么，而不是你赢了没有。</li>
-<li>你还要学会休息，要知道人生除了吃饭睡觉，其余都是小事。</li>
-</ul>
-<h3 id="致比上不足比下有余的你"><a href="#致比上不足比下有余的你" class="headerlink" title="致比上不足比下有余的你"></a>致比上不足比下有余的你</h3><ul>
-<li>恭喜你活成了孔夫子认为的最智慧的样子：中庸，你遵守规则，认真上进，你也享受生活，不负青春，家长嫌你不够刻苦，你也嫌弃自己怎么一到点就眼睛涩，别人挑灯夜战，让你怀疑自己的身躯太过平凡，不过，千万不要看低自己，因为攀比的阶梯永无止境，而目前这个环境的评价体系太单一，你的乐观，你的健康，你的好胃口，好睡眠，你的交际能力你的艺术特长，都会为你的人生助力。</li>
-<li>若说你需要什么提醒，那就是切勿让中庸变平庸，也许你应该在积极主动一点，也许你应该在独特一点，再勇敢一点，必要的休息、享受无可厚非，无聊的消磨时间却该痛改，让你的人生再闪亮一点。</li>
-</ul>
-<h3 id="致“偏才”、“怪才”的你"><a href="#致“偏才”、“怪才”的你" class="headerlink" title="致“偏才”、“怪才”的你"></a>致“偏才”、“怪才”的你</h3><ul>
-<li>毫无疑问，你很聪明，你还很桀骜不驯，你好像是社会这个大机体上的变异份子，与众人格格不入，如果你足够幸运，你有宽容你的父母，有赏识你的师长，让你有自由的生长空间，可是别忘记，这两个字—生长，长相怪异，但一定别忘记生长，而不论怎样生长，同样需要努力，别人在大路上奔跑，你在羊肠小路上跋涉，最终都会抵达心中的圣殿。</li>
-</ul>
-<h3 id="致迷茫，暂停脚步的你"><a href="#致迷茫，暂停脚步的你" class="headerlink" title="致迷茫，暂停脚步的你"></a>致迷茫，暂停脚步的你</h3><ul>
-<li><p>我同意不是所有人都是读书的料，如果你有兄弟姐妹，也许你不会被选中走读书之路，而可能去踢球，去做生意，去学一门手艺。不幸的是，传统文化和独子家庭必需把宝压在你身上，在你不擅长的领域，你被竞争甩在了最后，却不敢也不能言弃，苦苦支撑。师长们说你懒惰，不懂事，其实你只是迷茫。我毫不怀疑，当你走进这一段被迫跟进的道路，发现你感兴趣也擅长的领域，你会逐渐变成你做梦也没想过要变成的学霸，只不过，你比别人慢了半拍，到那时，你会惊喜的发现，不会考试的你，恰恰能突破常规，老记不住知识点的你，却有杰出的动手能力，门门功课落后的你，却在江湖上呼朋唤友，如鱼得水。</p>
-</li>
-<li><p>当然，老师对你并非没有忧虑，我忧虑你太快说放弃，太容易找借口，太轻易就逃避责任，做事养成了马虎的习惯。。。。。 勤奋开始的晚了一些，没关系，但无论何时一定要开始，否则，你真就遂了那些看扁你的人的愿。</p>
-<p>  <em>祝各位同学都有美好的人生</em></p>
-</li>
-</ul>
 
             </div>
             <hr/>
@@ -359,7 +440,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc" rel="external nofollow noreferrer">BY 木易杨</a>
+                    <a href="https://www.ik8s.cc" rel="external nofollow noreferrer">Jemmy yang</a>
                 </span>
             </div>
             <div class="reprint__type">
@@ -369,7 +450,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2019/10/22/%E8%B5%A0%E5%88%AB%E5%AF%84%E8%AF%AD/">https://www.ik8s.cc/2019/10/22/%E8%B5%A0%E5%88%AB%E5%AF%84%E8%AF%AD/</a>
+                    <a href="https://www.ik8s.cc/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/">https://www.ik8s.cc/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -382,7 +463,7 @@
                     本博客所有文章除特別声明外，均采用
                     <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
                     许可协议。转载请注明来源
-                    <a href="https://www.ik8s.cc" target="_blank">BY 木易杨</a>
+                    <a href="https://www.ik8s.cc" target="_blank">Jemmy yang</a>
                     !
                 </span>
             </div>
@@ -406,11 +487,7 @@
                 <div class="post-meta__tag-list" style="display: inline-block;">
                     
                         <div class="article-tag">
-                            
-                                <a href="/tags/%E8%BD%AC%E8%BD%BD%E6%96%87/">
-                                    <span class="chip bg-color">转载文</span>
-                                </a>
-                            
+                            <span class="chip bg-color">无标签</span>
                         </div>
                     
                 </div>
@@ -454,7 +531,7 @@
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2019-10-22T00-00-00',
+        id: '2019-11-30T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -475,51 +552,44 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2019/10/23/%E7%B3%BB%E7%BB%9F%E5%8F%91%E5%B8%83%E7%9B%B8%E5%85%B3/">
+                <a href="/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="发布相关知识">
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="企业级私有仓库Harbor安装部署">
                         
-                        <span class="card-title">发布相关知识</span>
+                        <span class="card-title">企业级私有仓库Harbor安装部署</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            预发布：
-线上用户没有入口，只有内部工程师有入口
-工程师配置host访问预发布服务器
-支付等避免出现问题：打款配置1块钱，上线时要确认是否修改
-发布：
-发布日期：周一，周二准备，周三发布，周四周五发现问题处理
-火车头自动发布模型：定时运行，
+                            系统环境操作系统：CentOS 7.6
+IP地址：10.0.11.20
+域名： reg.ik8s.cc
+安装要求：
+  1. 做好服务器时间同步
+  2. 因为是在内网使用，所以需在要访问reg.ik8s.cc的主机上配置hosts解析，或
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2019-10-23
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2019-11-30
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
-                            BY 木易杨
+                            Jemmy yang
                             
                         </span>
                     </div>
                 </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/%E6%8A%80%E6%9C%AF/">
-                        <span class="chip bg-color">技术</span>
-                    </a>
-                    
-                </div>
+
                 
             </div>
         </div>
@@ -530,53 +600,33 @@
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2019/10/20/%E9%98%85%E8%AF%BB%E4%B9%A6%E5%8D%95-2019/">
+                <a href="/2019/11/26/welcome/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/15.jpg" class="responsive-img" alt="书单">
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Welcome">
                         
-                        <span class="card-title">书单</span>
+                        <span class="card-title">Welcome</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            阅读书单技术书籍
-kubernetes in action（在读）
-kubernetes进阶实战
-持续集成与持续部署实践
-zabbix企业级分布式监控系统（第二版）
+                            欢迎访问我的个人博客，最近正使用Hexo对博客进行重构，欢迎批评指正！
 
-其它书
-暗时间
-清醒思考的艺术
-习惯的力量
-反脆弱
-
-
-随后会在本博客更
                         
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2019-10-20
+                                <i class="far fa-clock fa-fw icon-date"></i>2019-11-26
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
-                            BY 木易杨
+                            Jemmy yang
                             
                         </span>
                     </div>
-                </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/%E4%B8%AA%E4%BA%BA%E6%84%9F%E6%82%9F/">
-                        <span class="chip bg-color">个人感悟</span>
-                    </a>
-                    
                 </div>
                 
             </div>
