@@ -4,11 +4,30 @@
   
     
     <entry>
-      <title>一条sql查询语句如何执行</title>
+      <title>MySQL实战之二：sql语句执行之日志系统</title>
+      <link href="/2020/04/24/mysql%E6%97%A5%E5%BF%97/"/>
+      <url>/2020/04/24/mysql%E6%97%A5%E5%BF%97/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>本文是MySQL实战专栏第二篇，关于mysql日志系统</p></blockquote><h3 id="MySQL日志"><a href="#MySQL日志" class="headerlink" title="MySQL日志"></a>MySQL日志</h3><ul><li>slq更新流程会涉及两个重要日志模块<ul><li>重做日志，redo log</li><li>二进制日志 binlog</li></ul></li></ul><h4 id="重做日志-redo-log"><a href="#重做日志-redo-log" class="headerlink" title="重做日志 redo log"></a>重做日志 redo log</h4><ul><li>mysql每次更新操作都需要写磁盘，在此盘找到对应的纪录，然后更新，整个过程成本非常高，为了解决此问题，mysql采取了下面的策略：<ul><li><ol><li>write-ahead logging:有记录需要更新时，innodb引擎会先把记录写到redo log，并更新内存，存储引擎会在适当时候，将更新记录写到磁盘</li></ol></li><li><ol start="2"><li>redo log有固定大小，比如配置一组四个文件，编号为ib_logfile0，ib_logfile1，ib_logfile2，ib_logfile3每个文件大小1g，总共就是4g，从头开始写，写到末尾又回到开头写，write pos是当前记录位置，一边写，一边后移，写到3号文件末尾又回到0号开头，check point是当前要擦除的位置，也是往后移动并循环，擦除记录前要把记录更新到数据文件，write pos与checkpoint之间空着的部分，可以用来记录新纪录，如果write pos追上checkpoint，表示空间满了，此时不能再执行更新操作，得先擦除一些记录，把checkpoint推进以下</li></ol></li><li><ol start="3"><li>有了redo log innodb就可以保证数据库发生异常重启，之前的提交记录不会丢失，这个能力叫crash-safe</li></ol></li><li><ol start="4"><li>redo log是存储引擎层特有的日志</li></ol></li><li><ol start="5"><li>innodb_flush_log_at_trx_commit 参数设为1，表示每次事务的redo log都直接持久化到磁盘，保证mysql异常重启之后数据不丢失，建议设置为1</li></ol></li></ul></li></ul><h4 id="二进制日志-binglog"><a href="#二进制日志-binglog" class="headerlink" title="二进制日志 binglog"></a>二进制日志 binglog</h4><ul><li>binlog是server层日志</li><li>binlog只能用于归档，没有crash-safe能力，所以需要redo log来实现</li><li>sync_binlog设置为1，表示每次事务的binlog都持久化到磁盘，保证mysql异常重启后binlog比丢失，建议设置为1</li><li>binglog有两种模式：一种是statement，记录sql语句，另一个是row，会记录行的内容，更新前，更新后都有，记两条</li></ul><h4 id="两种日志有三点不同："><a href="#两种日志有三点不同：" class="headerlink" title="两种日志有三点不同："></a>两种日志有三点不同：</h4><ul><li>redo log是innodb存储引擎层特有，binlog是server层的，所有存储引擎都可以使用</li><li>redo log是物理日志，记录的是在某个数据页做了啥修改，binlog记录的是逻辑日志，记录语句的原始逻辑。比如，给id=2的这行的某个字段加1</li><li>redo log是循环写，binlog是追加写入，binlog文件写到一定大小会切换到下一个，并不覆盖之前的日志</li></ul><h4 id="innodb存储引擎执行update语句时的流程"><a href="#innodb存储引擎执行update语句时的流程" class="headerlink" title="innodb存储引擎执行update语句时的流程"></a>innodb存储引擎执行update语句时的流程</h4><blockquote><p>以  update t1 set c=c+1 where id =2 这条语句为例说明</p></blockquote><p>（1）执行器找存储引擎取id=2这行，如果此行数据页在内存中，就直接返回给执行器，否则，先从磁盘读到内存，然后返回<br>（2）执行器拿到这行数据，把值加1，得到新数据c+1，调用接口写入新数据<br>（3）引擎将新数据更新到内存，同时将更新记录写到redo log，此时redo log处于prepare状态，告知执行器执行完毕，随时可以提交事务<br>（4）执行器生成这个操作的binlog，并写入磁盘<br>（5）执行器调用引擎提交事务接口，引擎把刚刚写入的redo log改写成commit状态</p><ul><li><p>上面redo log的prepare和commit这两个状态就是两阶段提交</p></li><li><p>为什么要实行两阶段提交？</p><ul><li>为了让两个日志之间的逻辑一致</li><li>不使用两阶段提交，会导致数据库状态有可能与用它日志恢复出来的库状态不一致，</li></ul></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 专栏 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>MySQL实战之一：一条sql查询语句如何执行</title>
       <link href="/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/"/>
       <url>/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/</url>
       
-        <content type="html"><![CDATA[<blockquote><p>本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇，会持续更新本专栏内容</p></blockquote><h3 id="查询语句执行过程"><a href="#查询语句执行过程" class="headerlink" title="查询语句执行过程"></a>查询语句执行过程</h3><ul><li>MySQL分为server层和存储引擎两部分<ul><li>server层：（按执行顺序）<ul><li>连接器：管理连接，权限验证。 <ul><li>建立连接后，此连接用户拥有的权限取决于此时读到的权限，权限做了修改，不会影响已经存在连接的权限.</li><li>连接器断开连接，由wait_timeout参数控制，默认是8小时</li><li>尽量使用长链接</li><li>长链接过多，会导致内存占用过高，过大可能会被oom</li><li>定期断开长链接，是解决内存占用高的一个方案</li><li>5.7版本或更高版本，可以在执行一个大操作后，执行mysql_reset_connection来重新初始化连接资源，这也是解决内存占用高的一个方案   </li></ul></li><li>查询缓存：命中则直接返回结果<ul><li>连接建立完，就查询缓存，如执行过，执行结果会以key-value形式保存</li><li>不在缓存中，就继续下个步骤，执行完，将结果存入缓存中</li><li>不建议使用查询缓存</li><li>缓存失效非常频繁，一个表更新，此表上所有查询缓存都会被清空</li><li>对更新压力大的数据库，缓存命中率非常低</li><li>静态表适合使用查询缓存</li><li>mysql提供按需使用方式，将参数query_cache_type设置成DEMAND，表示默认不使用缓存，需要使用缓存，用类似select SQL_CACHE * from where id=10指定</li><li>mysql8删除了查询缓存功能</li></ul></li><li>分析器：词法分析，语法分析<ul><li>没命中缓存，就对sql做解析<ul><li>先做词法分析，分析出字符串是什么，代表什么</li><li>再做语法分析，判断语句是否符合语法</li></ul></li></ul></li><li>优化器：执行计划生成，索引选择<ul><li>经分析器，已经知道要做什么了，优化器决定使用哪个索引，决定表连接顺序</li></ul></li><li>执行器：操作引擎，返回结果<ul><li>通过优化器知道怎么做，执行器就要执行了</li><li>执行前会验证权限，如命中缓存，会在缓存返回结果时做权限验证</li></ul></li></ul></li><li>存储引擎层：<ul><li>插件式</li><li>负责数据的存储和提取</li></ul></li></ul></li></ul>]]></content>
+        <content type="html"><![CDATA[<blockquote><p>本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇</p></blockquote><h3 id="查询语句执行过程"><a href="#查询语句执行过程" class="headerlink" title="查询语句执行过程"></a>查询语句执行过程</h3><ul><li>MySQL分为server层和存储引擎两部分<ul><li>server层：（按执行顺序）<ul><li>连接器：管理连接，权限验证。 <ul><li>建立连接后，此连接用户拥有的权限取决于此时读到的权限，权限做了修改，不会影响已经存在连接的权限.</li><li>连接器断开连接，由wait_timeout参数控制，默认是8小时</li><li>尽量使用长链接</li><li>长链接过多，会导致内存占用过高，过大可能会被oom</li><li>定期断开长链接，是解决内存占用高的一个方案</li><li>5.7版本或更高版本，可以在执行一个大操作后，执行mysql_reset_connection来重新初始化连接资源，这也是解决内存占用高的一个方案   </li></ul></li><li>查询缓存：命中则直接返回结果<ul><li>连接建立完，就查询缓存，如执行过，执行结果会以key-value形式保存</li><li>不在缓存中，就继续下个步骤，执行完，将结果存入缓存中</li><li>不建议使用查询缓存</li><li>缓存失效非常频繁，一个表更新，此表上所有查询缓存都会被清空</li><li>对更新压力大的数据库，缓存命中率非常低</li><li>静态表适合使用查询缓存</li><li>mysql提供按需使用方式，将参数query_cache_type设置成DEMAND，表示默认不使用缓存，需要使用缓存，用类似select SQL_CACHE * from where id=10指定</li><li>mysql8删除了查询缓存功能</li></ul></li><li>分析器：词法分析，语法分析<ul><li>没命中缓存，就对sql做解析<ul><li>先做词法分析，分析出字符串是什么，代表什么</li><li>再做语法分析，判断语句是否符合语法</li></ul></li></ul></li><li>优化器：执行计划生成，索引选择<ul><li>经分析器，已经知道要做什么了，优化器决定使用哪个索引，决定表连接顺序</li></ul></li><li>执行器：操作引擎，返回结果<ul><li>通过优化器知道怎么做，执行器就要执行了</li><li>执行前会验证权限，如命中缓存，会在缓存返回结果时做权限验证</li></ul></li></ul></li><li>存储引擎层：<ul><li>插件式</li><li>负责数据的存储和提取</li></ul></li></ul></li></ul>]]></content>
       
       
       
