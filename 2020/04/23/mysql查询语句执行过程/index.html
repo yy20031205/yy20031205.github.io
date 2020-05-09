@@ -4,13 +4,15 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="企业级私有仓库Harbor安装部署, Jemmy yang Blog">
-    <meta name="description" content="系统环境操作系统：CentOS 7.6
-IP地址：10.0.11.20
-域名： reg.ik8s.cc
-安装要求：
-  1. 做好服务器时间同步
-  2. 因为是在内网使用，所以需在要访问reg.ik8s.cc的主机上配置hosts解析，或">
+    <meta name="keywords" content="一条sql查询语句如何执行, Jemmy yang Blog">
+    <meta name="description" content="
+本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇，会持续更新本专栏内容
+
+查询语句执行过程
+MySQL分为server层和存储引擎两部分
+server层：（按执行顺序）
+连接器：管理连接，权限验证。 
+建立连接后，此连接用户">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -18,7 +20,7 @@ IP地址：10.0.11.20
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>企业级私有仓库Harbor安装部署 | Jemmy yang Blog</title>
+    <title>一条sql查询语句如何执行 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -245,13 +247,13 @@ IP地址：10.0.11.20
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/2.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        企业级私有仓库Harbor安装部署
+                        一条sql查询语句如何执行
                     </div>
                 </div>
             </div>
@@ -274,8 +276,8 @@ IP地址：10.0.11.20
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/%E5%AE%B9%E5%99%A8/">
-                                <span class="chip bg-color">容器</span>
+                            <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                                <span class="chip bg-color">专栏</span>
                             </a>
                         
                     </div>
@@ -290,7 +292,7 @@ IP地址：10.0.11.20
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2019-11-30
+                    2020-04-23
                 </div>
                 
 
@@ -299,14 +301,14 @@ IP地址：10.0.11.20
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    336
+                    587
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    1 分
+                    2 分
                 </div>
                 
 				
@@ -322,113 +324,59 @@ IP地址：10.0.11.20
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h3 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h3><pre><code>操作系统：CentOS 7.6
-IP地址：10.0.11.20
-域名： reg.ik8s.cc
-安装要求：
-  1. 做好服务器时间同步
-  2. 因为是在内网使用，所以需在要访问reg.ik8s.cc的主机上配置hosts解析，或者配置内网dns进行域名解析</code></pre><h3 id="安装docker"><a href="#安装docker" class="headerlink" title="安装docker"></a>安装docker</h3><pre class=" language-shell"><code class="language-shell">
-   $ sudo yum install -y yum-utils openssl openssl-devel
-   $ sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-   $ sudo yum makecache
-   $ sudo yum install docker-ce
-</code></pre>
-<h3 id="配置docker-信任我们搭建的镜像仓库，否则提交镜像会报错"><a href="#配置docker-信任我们搭建的镜像仓库，否则提交镜像会报错" class="headerlink" title="配置docker(信任我们搭建的镜像仓库，否则提交镜像会报错)"></a>配置docker(信任我们搭建的镜像仓库，否则提交镜像会报错)</h3><pre class=" language-shell"><code class="language-shell">
-$ sudo vim /etc/docker/daemon.json
-
-{
-   "insecure-registries":["reg.ik8s.cc"]
-}</code></pre>
-<h3 id="安装docker-compose"><a href="#安装docker-compose" class="headerlink" title="安装docker compose"></a>安装docker compose</h3><pre class=" language-shell"><code class="language-shell">$ sudo curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-$ sudo chmod +x /usr/local/bin/docker-compose
-$ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-</code></pre>
-<h3 id="安装Harbor"><a href="#安装Harbor" class="headerlink" title="安装Harbor"></a>安装Harbor</h3><ul>
-<li>安装包下载</li>
-</ul>
-<pre class=" language-shell"><code class="language-shell">
-$ wget https://github.com/goharbor/harbor/releases/download/v1.9.3/harbor-offline-installer-v1.9.3.tgz
-$ sudo tar xf harbor-offline-installer-v1.9.3.tgz
-</code></pre>
-<ul>
-<li>创建https证书<br>此处使用自签的证书</li>
-</ul>
-<pre class=" language-shell"><code class="language-shell">$ sudo mkdir /etc/harbor/ssl && cd /etc/harbor/ssl
-$ sudo openssl genrsa -out ca.key 4096
-$ sudo openssl req -x509 -new -nodes -sha512 -days 3650\
-               -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=reg.ik8s.cc" -key ca.key -out ca.crt
-$ sudo openssl genrsa -out reg.ik8s.cc.key 4096
-$ sudo openssl req -sha512 -new \
-               -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=reg.ik8s.cc.com" \
-               -key reg.ik8s.cc.key \
-               -out reg.ik8s.cc.csr
-$ sudo cat > v3.ext <<-EOF
-authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1=reg.ik8s.cc
-DNS.2=ik8s.cc
-DNS.3=hostname
-EOF
-$ sudo openssl x509 -req -sha512 -days 3650 \
-               -extfile v3.ext \
-               -CA ca.crt -CAkey ca.key -CAcreateserial \
-               -in reg.ik8s.cc.csr \
-               -out reg.ik8s.cc.crt
-$ sudo openssl x509 -inform PEM -in reg.ik8s.cc.crt -out reg.ik8s.cc.cert</code></pre>
-<ul>
-<li>为Harbor配置服务端证书和key<ul>
-<li>为docker配置证书，key和CA</li>
-<li>Docker守护程序将.crt文件解释为CA证书，并将.cert文件解释为客户端证书。因此要做一下证书转换<pre class=" language-shell"><code class="language-shell">$ sudo openssl x509 -inform PEM -in reg.ik8s.cc.crt -out reg.ik8s.cc.cert
-$ sudo mkdir -p /etc/docker/certs.d/reg.ik8s.cc/
-$ sudo cp reg.ik8s.cc.cert /etc/docker/certs.d/reg.ik8s.cc/
-$ sudo cp reg.ik8s.cc.key /etc/docker/certs.d/reg.ik8s.cc/
-$ sudo cp ca.crt /etc/docker/certs.d/reg.ik8s.cc/</code></pre>
-</li>
-</ul>
-</li>
-<li>配置Harbor配置文件</li>
-</ul>
-<pre class=" language-shell"><code class="language-shell"># vim harbor.yml
-
-hostname: reg.ik8s.cc
-# http related config
-http:
-  # port for http, default is 80. If https enabled, this port will redirect to https port
-  port: 80
-# https related config
-https:
-# https port for harbor, default is 443
-  port: 443
-# The path of cert and key files for nginx
-  certificate: /etc/harbor/ssl/reg.ik8s.cc.crt
-  private_key: /etc/harbor/ssl/reg.ik8s.cc.key</code></pre>
-<ul>
-<li>使用prepare脚本进行配置</li>
-</ul>
-<pre class=" language-shell"><code class="language-shell">$ sudo ./prepare
-</code></pre>
-<ul>
-<li>启动服务(如果运行了docker compose服务需要先停止)</li>
-</ul>
-<pre class=" language-shell"><code class="language-shell">
-$ sudo docker-compose up -d
-</code></pre>
-<h3 id="访问服务"><a href="#访问服务" class="headerlink" title="访问服务"></a>访问服务</h3><ul>
-<li>浏览器访问：<a href="https://reg.ik8s.cc" target="_blank" rel="noopener">https://reg.ik8s.cc</a></li>
-<li>默认用户名和密码(生产环境要修改)：<ul>
-<li>user: admin</li>
-<li>passwd: Harbor12345</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>参考文档：<br>1.<a href="https://yq.aliyun.com/articles/110806?spm=5176.8351553.0.0.63dd1991ZH3AH5" target="_blank" rel="noopener">https://yq.aliyun.com/articles/110806?spm=5176.8351553.0.0.63dd1991ZH3AH5</a><br>2.<a href="https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md" target="_blank" rel="noopener">https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md</a><br>3.<a href="https://github.com/goharbor/harbor/blob/master/docs/configure_https.md" target="_blank" rel="noopener">https://github.com/goharbor/harbor/blob/master/docs/configure_https.md</a><br>4.<a href="https://docs.docker.com/compose/install/" target="_blank" rel="noopener">https://docs.docker.com/compose/install/</a></p>
+                <blockquote>
+<p>本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇，会持续更新本专栏内容</p>
 </blockquote>
+<h3 id="查询语句执行过程"><a href="#查询语句执行过程" class="headerlink" title="查询语句执行过程"></a>查询语句执行过程</h3><ul>
+<li>MySQL分为server层和存储引擎两部分<ul>
+<li>server层：（按执行顺序）<ul>
+<li>连接器：管理连接，权限验证。 <ul>
+<li>建立连接后，此连接用户拥有的权限取决于此时读到的权限，权限做了修改，不会影响已经存在连接的权限.</li>
+<li>连接器断开连接，由wait_timeout参数控制，默认是8小时</li>
+<li>尽量使用长链接</li>
+<li>长链接过多，会导致内存占用过高，过大可能会被oom</li>
+<li>定期断开长链接，是解决内存占用高的一个方案</li>
+<li>5.7版本或更高版本，可以在执行一个大操作后，执行mysql_reset_connection来重新初始化连接资源，这也是解决内存占用高的一个方案   </li>
+</ul>
+</li>
+<li>查询缓存：命中则直接返回结果<ul>
+<li>连接建立完，就查询缓存，如执行过，执行结果会以key-value形式保存</li>
+<li>不在缓存中，就继续下个步骤，执行完，将结果存入缓存中</li>
+<li>不建议使用查询缓存</li>
+<li>缓存失效非常频繁，一个表更新，此表上所有查询缓存都会被清空</li>
+<li>对更新压力大的数据库，缓存命中率非常低</li>
+<li>静态表适合使用查询缓存</li>
+<li>mysql提供按需使用方式，将参数query_cache_type设置成DEMAND，表示默认不使用缓存，需要使用缓存，用类似select SQL_CACHE * from where id=10指定</li>
+<li>mysql8删除了查询缓存功能</li>
+</ul>
+</li>
+<li>分析器：词法分析，语法分析<ul>
+<li>没命中缓存，就对sql做解析<ul>
+<li>先做词法分析，分析出字符串是什么，代表什么</li>
+<li>再做语法分析，判断语句是否符合语法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>优化器：执行计划生成，索引选择<ul>
+<li>经分析器，已经知道要做什么了，优化器决定使用哪个索引，决定表连接顺序</li>
+</ul>
+</li>
+<li>执行器：操作引擎，返回结果<ul>
+<li>通过优化器知道怎么做，执行器就要执行了</li>
+<li>执行前会验证权限，如命中缓存，会在缓存返回结果时做权限验证</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>存储引擎层：<ul>
+<li>插件式</li>
+<li>负责数据的存储和提取</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
             </div>
             <hr/>
@@ -454,7 +402,7 @@ $ sudo docker-compose up -d
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/">https://www.ik8s.cc/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/</a>
+                    <a href="https://www.ik8s.cc/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/">https://www.ik8s.cc/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -492,8 +440,8 @@ $ sudo docker-compose up -d
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/%E5%AE%B9%E5%99%A8/">
-                                    <span class="chip bg-color">容器</span>
+                                <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                                    <span class="chip bg-color">专栏</span>
                                 </a>
                             
                         </div>
@@ -539,7 +487,7 @@ $ sudo docker-compose up -d
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2019-11-30T00-00-00',
+        id: '2020-04-23T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -560,9 +508,63 @@ $ sudo docker-compose up -d
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
+            <div class="card">
+                <a href="/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/2.jpg" class="responsive-img" alt="一条sql查询语句如何执行">
+                        
+                        <span class="card-title">一条sql查询语句如何执行</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇，会持续更新本专栏内容
+
+查询语句执行过程
+MySQL分为server层和存储引擎两部分
+server层：（按执行顺序）
+连接器：管理连接，权限验证。 
+建立连接后，此连接用户
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-23
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            BY 木易杨
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                        <span class="chip bg-color">专栏</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
             <div class="card">
                 <a href="/2020/04/01/%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86/">
                     <div class="card-image">
@@ -585,9 +587,9 @@ $ sudo docker-compose up -d
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2020-04-01
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-01
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -603,44 +605,6 @@ $ sudo docker-compose up -d
                         <span class="chip bg-color">生活</span>
                     </a>
                     
-                </div>
-                
-            </div>
-        </div>
-        
-        
-        <div class="article col s12 m6" data-aos="fade-up">
-            <div class="article-badge right-badge text-color">
-                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
-            </div>
-            <div class="card">
-                <a href="/2019/11/26/welcome/">
-                    <div class="card-image">
-                        
-                        
-                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Welcome">
-                        
-                        <span class="card-title">Welcome</span>
-                    </div>
-                </a>
-                <div class="card-content article-content">
-                    <div class="summary block-with-text">
-                        
-                            欢迎访问我的个人博客，最近正使用Hexo对博客进行重构，欢迎批评指正！
-
-                        
-                    </div>
-                    <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2019-11-26
-                            </span>
-                        <span class="publish-author">
-                            
-                            <i class="fas fa-user fa-fw"></i>
-                            Jemmy yang
-                            
-                        </span>
-                    </div>
                 </div>
                 
             </div>

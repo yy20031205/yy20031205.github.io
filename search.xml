@@ -4,6 +4,44 @@
   
     
     <entry>
+      <title>一条sql查询语句如何执行</title>
+      <link href="/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/"/>
+      <url>/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇，会持续更新本专栏内容</p></blockquote><h3 id="查询语句执行过程"><a href="#查询语句执行过程" class="headerlink" title="查询语句执行过程"></a>查询语句执行过程</h3><ul><li>MySQL分为server层和存储引擎两部分<ul><li>server层：（按执行顺序）<ul><li>连接器：管理连接，权限验证。 <ul><li>建立连接后，此连接用户拥有的权限取决于此时读到的权限，权限做了修改，不会影响已经存在连接的权限.</li><li>连接器断开连接，由wait_timeout参数控制，默认是8小时</li><li>尽量使用长链接</li><li>长链接过多，会导致内存占用过高，过大可能会被oom</li><li>定期断开长链接，是解决内存占用高的一个方案</li><li>5.7版本或更高版本，可以在执行一个大操作后，执行mysql_reset_connection来重新初始化连接资源，这也是解决内存占用高的一个方案   </li></ul></li><li>查询缓存：命中则直接返回结果<ul><li>连接建立完，就查询缓存，如执行过，执行结果会以key-value形式保存</li><li>不在缓存中，就继续下个步骤，执行完，将结果存入缓存中</li><li>不建议使用查询缓存</li><li>缓存失效非常频繁，一个表更新，此表上所有查询缓存都会被清空</li><li>对更新压力大的数据库，缓存命中率非常低</li><li>静态表适合使用查询缓存</li><li>mysql提供按需使用方式，将参数query_cache_type设置成DEMAND，表示默认不使用缓存，需要使用缓存，用类似select SQL_CACHE * from where id=10指定</li><li>mysql8删除了查询缓存功能</li></ul></li><li>分析器：词法分析，语法分析<ul><li>没命中缓存，就对sql做解析<ul><li>先做词法分析，分析出字符串是什么，代表什么</li><li>再做语法分析，判断语句是否符合语法</li></ul></li></ul></li><li>优化器：执行计划生成，索引选择<ul><li>经分析器，已经知道要做什么了，优化器决定使用哪个索引，决定表连接顺序</li></ul></li><li>执行器：操作引擎，返回结果<ul><li>通过优化器知道怎么做，执行器就要执行了</li><li>执行前会验证权限，如命中缓存，会在缓存返回结果时做权限验证</li></ul></li></ul></li><li>存储引擎层：<ul><li>插件式</li><li>负责数据的存储和提取</li></ul></li></ul></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 专栏 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>时间管理</title>
+      <link href="/2020/04/01/%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86/"/>
+      <url>/2020/04/01/%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p><strong>此篇文章是根据国外一片博客的个人总结</strong></p></blockquote><h3 id="时间管理之60-30-10法则"><a href="#时间管理之60-30-10法则" class="headerlink" title="时间管理之60-30-10法则"></a>时间管理之60-30-10法则</h3><ul><li>时间管理的本质是分轻重缓急，在合适的时间做合适的事，学会60-30-10法则，可以让你从无序的生活中解脱出来。</li><li>将一天中60%时间用于高价值的活动，30%时间给低价值的活动，10%时间用于能让你为明天做准备的活动</li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 生活 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>企业级私有仓库Harbor安装部署</title>
       <link href="/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/"/>
       <url>/2019/11/30/%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93Harbor%E5%AE%89%E8%A3%85/</url>
