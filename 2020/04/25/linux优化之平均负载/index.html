@@ -417,9 +417,13 @@ Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidst
 <pre><code>watch -d uptime
 
 7:18:05 up  1:17,  5 users,  load average: 6.58, 2.69, 1.37</code></pre></li>
-<li><p>终端3:<br>```<br>mpstat -P ALL 5<br>05:22:27 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle<br>05:22:32 PM  all  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>05:22:32 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>05:22:32 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</p>
-</li>
 <li><p>终端3:</p>
+<pre><code>mpstat -P ALL 5
+05:22:27 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+05:22:32 PM  all  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+05:22:32 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+05:22:32 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</code></pre></li>
+<li><p>终端4:</p>
 <pre><code>pidstat -u 5 1
 
 05:19:08 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
