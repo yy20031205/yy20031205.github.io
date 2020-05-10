@@ -4,19 +4,18 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="MySQL实战之二：sql语句执行之日志系统, Jemmy yang Blog">
+    <meta name="keywords" content="MySQL实战之三：事务隔离, Jemmy yang Blog">
     <meta name="description" content="
-本文是MySQL实战专栏第二篇，关于mysql日志系统
+本文是mysql实战专栏第三篇
 
-MySQL日志
-slq更新流程会涉及两个重要日志模块
-重做日志，redo log
-二进制日志 binlog
+事务隔离，为什么你改了我还看不见？
+事务是要保证一组数据库操作，要么全部成功，要么全部失败，在mysql中，事务支持是在存储引擎层实现
 
+隔离性与隔离级别
+隔离性
 
-
-重做日志 redo log
-mysql每次更新操作都需要写磁盘，在">
+Atomicity:原子性
+Consi">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -24,7 +23,7 @@ mysql每次更新操作都需要写磁盘，在">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>MySQL实战之二：sql语句执行之日志系统 | Jemmy yang Blog</title>
+    <title>MySQL实战之三：事务隔离 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -257,7 +256,7 @@ mysql每次更新操作都需要写磁盘，在">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        MySQL实战之二：sql语句执行之日志系统
+                        MySQL实战之三：事务隔离
                     </div>
                 </div>
             </div>
@@ -296,7 +295,7 @@ mysql每次更新操作都需要写磁盘，在">
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2020-04-24
+                    2020-04-25
                 </div>
                 
 
@@ -305,14 +304,14 @@ mysql每次更新操作都需要写磁盘，在">
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    932
+                    1.1k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    3 分
+                    4 分
                 </div>
                 
 				
@@ -329,62 +328,79 @@ mysql每次更新操作都需要写磁盘，在">
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <blockquote>
-<p>本文是MySQL实战专栏第二篇，关于mysql日志系统</p>
+<p>本文是mysql实战专栏第三篇</p>
 </blockquote>
-<h3 id="MySQL日志"><a href="#MySQL日志" class="headerlink" title="MySQL日志"></a>MySQL日志</h3><ul>
-<li>slq更新流程会涉及两个重要日志模块<ul>
-<li>重做日志，redo log</li>
-<li>二进制日志 binlog</li>
+<h4 id="事务隔离，为什么你改了我还看不见？"><a href="#事务隔离，为什么你改了我还看不见？" class="headerlink" title="事务隔离，为什么你改了我还看不见？"></a>事务隔离，为什么你改了我还看不见？</h4><ul>
+<li>事务是要保证一组数据库操作，要么全部成功，要么全部失败，在mysql中，事务支持是在存储引擎层实现</li>
+</ul>
+<h4 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h4><ul>
+<li><p>隔离性</p>
+<ul>
+<li>Atomicity:原子性</li>
+<li>Consistency:一致性</li>
+<li>Isolation:隔离性</li>
+<li>Durability:持久性</li>
 </ul>
 </li>
-</ul>
-<h4 id="重做日志-redo-log"><a href="#重做日志-redo-log" class="headerlink" title="重做日志 redo log"></a>重做日志 redo log</h4><ul>
-<li>mysql每次更新操作都需要写磁盘，在此盘找到对应的纪录，然后更新，整个过程成本非常高，为了解决此问题，mysql采取了下面的策略：<ul>
-<li><ol>
-<li>write-ahead logging:有记录需要更新时，innodb引擎会先把记录写到redo log，并更新内存，存储引擎会在适当时候，将更新记录写到磁盘</li>
-</ol>
-</li>
-<li><ol start="2">
-<li>redo log有固定大小，比如配置一组四个文件，编号为ib_logfile0，ib_logfile1，ib_logfile2，ib_logfile3每个文件大小1g，总共就是4g，从头开始写，写到末尾又回到开头写，write pos是当前记录位置，一边写，一边后移，写到3号文件末尾又回到0号开头，check point是当前要擦除的位置，也是往后移动并循环，擦除记录前要把记录更新到数据文件，write pos与checkpoint之间空着的部分，可以用来记录新纪录，如果write pos追上checkpoint，表示空间满了，此时不能再执行更新操作，得先擦除一些记录，把checkpoint推进以下</li>
-</ol>
-</li>
-<li><ol start="3">
-<li>有了redo log innodb就可以保证数据库发生异常重启，之前的提交记录不会丢失，这个能力叫crash-safe</li>
-</ol>
-</li>
-<li><ol start="4">
-<li>redo log是存储引擎层特有的日志</li>
-</ol>
-</li>
-<li><ol start="5">
-<li>innodb_flush_log_at_trx_commit 参数设为1，表示每次事务的redo log都直接持久化到磁盘，保证mysql异常重启之后数据不丢失，建议设置为1</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="二进制日志-binglog"><a href="#二进制日志-binglog" class="headerlink" title="二进制日志 binglog"></a>二进制日志 binglog</h4><ul>
-<li>binlog是server层日志</li>
-<li>binlog只能用于归档，没有crash-safe能力，所以需要redo log来实现</li>
-<li>sync_binlog设置为1，表示每次事务的binlog都持久化到磁盘，保证mysql异常重启后binlog比丢失，建议设置为1</li>
-<li>binglog有两种模式：一种是statement，记录sql语句，另一个是row，会记录行的内容，更新前，更新后都有，记两条</li>
-</ul>
-<h4 id="两种日志有三点不同："><a href="#两种日志有三点不同：" class="headerlink" title="两种日志有三点不同："></a>两种日志有三点不同：</h4><ul>
-<li>redo log是innodb存储引擎层特有，binlog是server层的，所有存储引擎都可以使用</li>
-<li>redo log是物理日志，记录的是在某个数据页做了啥修改，binlog记录的是逻辑日志，记录语句的原始逻辑。比如，给id=2的这行的某个字段加1</li>
-<li>redo log是循环写，binlog是追加写入，binlog文件写到一定大小会切换到下一个，并不覆盖之前的日志</li>
-</ul>
-<h4 id="innodb存储引擎执行update语句时的流程"><a href="#innodb存储引擎执行update语句时的流程" class="headerlink" title="innodb存储引擎执行update语句时的流程"></a>innodb存储引擎执行update语句时的流程</h4><blockquote>
-<p>以  update t1 set c=c+1 where id =2 这条语句为例说明</p>
+<li><p>隔离级别</p>
+<blockquote>
+<p>当数据库上有多个事务同时执行的时候，就会出现以下问题，为解决以下问题，就有了隔离级别的概念</p>
 </blockquote>
-<p>（1）执行器找存储引擎取id=2这行，如果此行数据页在内存中，就直接返回给执行器，否则，先从磁盘读到内存，然后返回<br>（2）执行器拿到这行数据，把值加1，得到新数据c+1，调用接口写入新数据<br>（3）引擎将新数据更新到内存，同时将更新记录写到redo log，此时redo log处于prepare状态，告知执行器执行完毕，随时可以提交事务<br>（4）执行器生成这个操作的binlog，并写入磁盘<br>（5）执行器调用引擎提交事务接口，引擎把刚刚写入的redo log改写成commit状态</p>
 <ul>
-<li><p>上面redo log的prepare和commit这两个状态就是两阶段提交</p>
+<li><p>dirty read: 脏读</p>
 </li>
-<li><p>为什么要实行两阶段提交？</p>
+<li><p>non-repeatable read： 不可重复读</p>
+</li>
+<li><p>phantom read：幻读</p>
+</li>
+<li><p>隔离级别：</p>
 <ul>
-<li>为了让两个日志之间的逻辑一致</li>
-<li>不使用两阶段提交，会导致数据库状态有可能与用它日志恢复出来的库状态不一致，</li>
+<li>read uncommitted:读未提交，一个事务还没提交时，它做的变更就能被别的事务看到；别人改数据的事务尚未提交，我在我的事务中也能读到</li>
+<li>read committed:读提交，一个事务提交之后，它做的变更才会被其他事务看到；别人改数据的事务已经提交，我在我的事务中才能读到</li>
+<li>repeatable read:可重复读，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的，当然在可重复读隔离级别下，未提交变更对其他事务也是不可见的,mysql默认是此隔离级别；别人改数据的事务已经提交，我在我的事务中也不去读</li>
+<li>serializable: 串行化，对于同一行记录，写会加写锁，读会加读锁，当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行，我的事务尚未提交，别人休想改数据</li>
+<li>以上四种隔离级别，性能依次降低，安全性依次提高</li>
+<li>查看数据库目前隔离级别：</li>
+</ul>
+<pre><code> mysql&gt; show variables like &#39;transaction_isolation&#39;;  5.7版本
+ mysql&gt; show variables like &#39;tx_isolation&#39;; 5.6或更早版本</code></pre><ul>
+<li>设置隔离级别，就将启动参数transaction_isolation设置为要设置的隔离级别</li>
+<li>在mysql中，每条记录在更新时都会同时记录一条回滚记录，记录上的最新值，通过回滚操作，都可以得到前一个状态的值，同一条记录在系统中可以存在多个版本，这就是数据库的多版本并发控制MVCC，系统会判断，当没有事务再需要用到回滚日志时，回滚日志会被删除</li>
+<li>5.5版本及之前版本，回滚日志和数据字典一起放在ibdata文件里，即使长事务最终提交，回滚段被清理，文件也不会变小</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="事务启动方式"><a href="#事务启动方式" class="headerlink" title="事务启动方式"></a>事务启动方式</h4><blockquote>
+<p>mysql事务启动方式有以下几种：</p>
+</blockquote>
+<ul>
+<li><p>显式启动，begin或start transaction，提交语句是commit，回滚使用rollback</p>
+</li>
+<li><p>set autocommit=0,关闭自动提交，执行select语句，事务就启动，并不会自动提交，当执行commit或rollback，或断开连接，事务才结束，有些客户端连接成功会默认执行set autocommit=1，如果是长连接，就会导致意外的长事务，autocommit=1情况下，用begin显式启动事务，执行commit则提交事务，如果执行commit work and chain，则是提交事务并自动启动下一个事务，这样省去了在此执行begin的开销</p>
+</li>
+</ul>
+<p><strong>查询超过60s的长事务</strong></p>
+<pre><code>mysql&gt; mysql&gt; SELECT * from information_schema.INNODB_TRX WHERE TIME_TO_SEC(TIMEDIFF(NOW(),trx_started))&gt;60;
+</code></pre><ul>
+<li>如何应对数据库长事务问题？<blockquote>
+<p>此问题要从应用开发端和数据库端来看</p>
+</blockquote>
+<ul>
+<li>应用开发端：<ul>
+<li>确认是否设置autocommit=0，此确认工作可以在测试环境中开展，把mysql的general_log开启，然后跑一个业务逻辑，通过general_log日志来确认，目标是设置autocommit=1</li>
+<li>确认是否有不必要的只读事务，有些会把好几个select语句放入事务中，这种只读事务可以去掉</li>
+<li>业务连接数据库时，根据业务本身的预估，通过set max_execution_time命令，来控制每个语句执行的最长时间，避免单个语句意外执行长时间</li>
+</ul>
+</li>
+<li>数据库端：<ul>
+<li>监控 information_schema.innodb_trx表，设置长事务阈值，超过就报警或者kill</li>
+<li>使用pt-kill工具</li>
+<li>在业务功能测试阶段要输出所有general_log，分析日志，提前发现问题</li>
+<li>如使用mysql5.6或更高版本，把innodb_undo_tablespaces设置为2，或更大值，如果真出现大事务导致回滚段过大，这样设置后清理起来更方便</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -413,7 +429,7 @@ mysql每次更新操作都需要写磁盘，在">
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/04/24/mysql%E6%97%A5%E5%BF%97/">https://www.ik8s.cc/2020/04/24/mysql%E6%97%A5%E5%BF%97/</a>
+                    <a href="https://www.ik8s.cc/2020/04/25/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">https://www.ik8s.cc/2020/04/25/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -498,7 +514,7 @@ mysql每次更新操作都需要写磁盘，在">
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2020-04-24T00-00-00',
+        id: '2020-04-25T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -523,29 +539,24 @@ mysql每次更新操作都需要写磁盘，在">
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2020/04/25/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">
+                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="MySQL实战之三：事务隔离">
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="Linux优化实战之平均负载">
                         
-                        <span class="card-title">MySQL实战之三：事务隔离</span>
+                        <span class="card-title">Linux优化实战之平均负载</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            
-本文是mysql实战专栏第三篇
+                            平均负载
+平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
 
-事务隔离，为什么你改了我还看不见？
-事务是要保证一组数据库操作，要么全部成功，要么全部失败，在mysql中，事务支持是在存储引擎层实现
+可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
 
-隔离性与隔离级别
-隔离性
-
-Atomicity:原子性
-Consi
+不可中
                         
                     </div>
                     <div class="publish-info">
@@ -578,31 +589,35 @@ Consi
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/">
+                <a href="/2020/04/24/mysql%E6%97%A5%E5%BF%97/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="MySQL实战之一：一条sql查询语句如何执行">
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="MySQL实战之二：sql语句执行之日志系统">
                         
-                        <span class="card-title">MySQL实战之一：一条sql查询语句如何执行</span>
+                        <span class="card-title">MySQL实战之二：sql语句执行之日志系统</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
                             
-本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇
+本文是MySQL实战专栏第二篇，关于mysql日志系统
 
-查询语句执行过程
-MySQL分为server层和存储引擎两部分
-server层：（按执行顺序）
-连接器：管理连接，权限验证。 
-建立连接后，此连接用户拥有的权限取决于此时读
+MySQL日志
+slq更新流程会涉及两个重要日志模块
+重做日志，redo log
+二进制日志 binlog
+
+
+
+重做日志 redo log
+mysql每次更新操作都需要写磁盘，在
                         
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-23
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-24
                             </span>
                         <span class="publish-author">
                             

@@ -4,19 +4,13 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="MySQL实战之二：sql语句执行之日志系统, Jemmy yang Blog">
-    <meta name="description" content="
-本文是MySQL实战专栏第二篇，关于mysql日志系统
+    <meta name="keywords" content="Linux优化实战之平均负载, Jemmy yang Blog">
+    <meta name="description" content="平均负载
+平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
 
-MySQL日志
-slq更新流程会涉及两个重要日志模块
-重做日志，redo log
-二进制日志 binlog
+可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
 
-
-
-重做日志 redo log
-mysql每次更新操作都需要写磁盘，在">
+不可中">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -24,7 +18,7 @@ mysql每次更新操作都需要写磁盘，在">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>MySQL实战之二：sql语句执行之日志系统 | Jemmy yang Blog</title>
+    <title>Linux优化实战之平均负载 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -251,13 +245,13 @@ mysql每次更新操作都需要写磁盘，在">
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/11.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/9.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        MySQL实战之二：sql语句执行之日志系统
+                        Linux优化实战之平均负载
                     </div>
                 </div>
             </div>
@@ -296,7 +290,7 @@ mysql每次更新操作都需要写磁盘，在">
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2020-04-24
+                    2020-04-25
                 </div>
                 
 
@@ -305,14 +299,14 @@ mysql每次更新操作都需要写磁盘，在">
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    932
+                    1.8k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    3 分
+                    8 分
                 </div>
                 
 				
@@ -328,63 +322,120 @@ mysql每次更新操作都需要写磁盘，在">
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <blockquote>
-<p>本文是MySQL实战专栏第二篇，关于mysql日志系统</p>
-</blockquote>
-<h3 id="MySQL日志"><a href="#MySQL日志" class="headerlink" title="MySQL日志"></a>MySQL日志</h3><ul>
-<li>slq更新流程会涉及两个重要日志模块<ul>
-<li>重做日志，redo log</li>
-<li>二进制日志 binlog</li>
-</ul>
+                <h4 id="平均负载"><a href="#平均负载" class="headerlink" title="平均负载"></a>平均负载</h4><ul>
+<li><p>平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系</p>
 </li>
-</ul>
-<h4 id="重做日志-redo-log"><a href="#重做日志-redo-log" class="headerlink" title="重做日志 redo log"></a>重做日志 redo log</h4><ul>
-<li>mysql每次更新操作都需要写磁盘，在此盘找到对应的纪录，然后更新，整个过程成本非常高，为了解决此问题，mysql采取了下面的策略：<ul>
-<li><ol>
-<li>write-ahead logging:有记录需要更新时，innodb引擎会先把记录写到redo log，并更新内存，存储引擎会在适当时候，将更新记录写到磁盘</li>
-</ol>
+<li><p>可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程</p>
 </li>
-<li><ol start="2">
-<li>redo log有固定大小，比如配置一组四个文件，编号为ib_logfile0，ib_logfile1，ib_logfile2，ib_logfile3每个文件大小1g，总共就是4g，从头开始写，写到末尾又回到开头写，write pos是当前记录位置，一边写，一边后移，写到3号文件末尾又回到0号开头，check point是当前要擦除的位置，也是往后移动并循环，擦除记录前要把记录更新到数据文件，write pos与checkpoint之间空着的部分，可以用来记录新纪录，如果write pos追上checkpoint，表示空间满了，此时不能再执行更新操作，得先擦除一些记录，把checkpoint推进以下</li>
-</ol>
-</li>
-<li><ol start="3">
-<li>有了redo log innodb就可以保证数据库发生异常重启，之前的提交记录不会丢失，这个能力叫crash-safe</li>
-</ol>
-</li>
-<li><ol start="4">
-<li>redo log是存储引擎层特有的日志</li>
-</ol>
-</li>
-<li><ol start="5">
-<li>innodb_flush_log_at_trx_commit 参数设为1，表示每次事务的redo log都直接持久化到磁盘，保证mysql异常重启之后数据不丢失，建议设置为1</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="二进制日志-binglog"><a href="#二进制日志-binglog" class="headerlink" title="二进制日志 binglog"></a>二进制日志 binglog</h4><ul>
-<li>binlog是server层日志</li>
-<li>binlog只能用于归档，没有crash-safe能力，所以需要redo log来实现</li>
-<li>sync_binlog设置为1，表示每次事务的binlog都持久化到磁盘，保证mysql异常重启后binlog比丢失，建议设置为1</li>
-<li>binglog有两种模式：一种是statement，记录sql语句，另一个是row，会记录行的内容，更新前，更新后都有，记两条</li>
-</ul>
-<h4 id="两种日志有三点不同："><a href="#两种日志有三点不同：" class="headerlink" title="两种日志有三点不同："></a>两种日志有三点不同：</h4><ul>
-<li>redo log是innodb存储引擎层特有，binlog是server层的，所有存储引擎都可以使用</li>
-<li>redo log是物理日志，记录的是在某个数据页做了啥修改，binlog记录的是逻辑日志，记录语句的原始逻辑。比如，给id=2的这行的某个字段加1</li>
-<li>redo log是循环写，binlog是追加写入，binlog文件写到一定大小会切换到下一个，并不覆盖之前的日志</li>
-</ul>
-<h4 id="innodb存储引擎执行update语句时的流程"><a href="#innodb存储引擎执行update语句时的流程" class="headerlink" title="innodb存储引擎执行update语句时的流程"></a>innodb存储引擎执行update语句时的流程</h4><blockquote>
-<p>以  update t1 set c=c+1 where id =2 这条语句为例说明</p>
-</blockquote>
-<p>（1）执行器找存储引擎取id=2这行，如果此行数据页在内存中，就直接返回给执行器，否则，先从磁盘读到内存，然后返回<br>（2）执行器拿到这行数据，把值加1，得到新数据c+1，调用接口写入新数据<br>（3）引擎将新数据更新到内存，同时将更新记录写到redo log，此时redo log处于prepare状态，告知执行器执行完毕，随时可以提交事务<br>（4）执行器生成这个操作的binlog，并写入磁盘<br>（5）执行器调用引擎提交事务接口，引擎把刚刚写入的redo log改写成commit状态</p>
+<li><p>不可中断状态：处于内核态关键流程中的进程，这些进程是不可被打断的，如等待硬件设备的io相应，ps命令看到的处于D状态的进程</p>
 <ul>
-<li><p>上面redo log的prepare和commit这两个状态就是两阶段提交</p>
+<li>当一个进程向磁盘读写数据时，为保证数据一致性，在得到磁盘回复前，他是不能被其他进程或者中断打断的，这时候的进程就处于不可中断状态</li>
+</ul>
 </li>
-<li><p>为什么要实行两阶段提交？</p>
+<li><p>当平均负载为2，在2个cpu上，意味着所有cpu被完全占用，在4个cpu上，意味着cpu有50%的空闲，在1个cpu上，意味着一半进程竞争不到cpu</p>
+</li>
+<li><p>平均负载最理想的情况是等于cpu个数</p>
+<blockquote>
+<p>获取cpu个数命令：</p>
+</blockquote>
+<pre><code>   # grep &#39;model name&#39; /proc/cpuinfo |wc -l</code></pre></li>
+<li><p>一般会给出1分钟，5分钟，10分钟三个时间内的负载情况</p>
 <ul>
-<li>为了让两个日志之间的逻辑一致</li>
-<li>不使用两阶段提交，会导致数据库状态有可能与用它日志恢复出来的库状态不一致，</li>
+<li>如果三个时间段的值基本相同，或相差不大，那就说明系统负载很平稳</li>
+<li>如果1分钟内的负载远小于15分钟的。说明系统最近1分钟内的负载在减少，而过去15分钟内却有很高的负载</li>
+<li>如果1分钟内负载远大于15的，说明最近1分钟内负载在增加，这种增加可能是临时性的，也可能会持续下去，一旦1分钟内平均负载接近或超过cpu个数，就意味着系统正在发生过载问题，这就需要分析原因，进行优化了，一般平均负载高于cpu数量70%时，就要引起注意了，更好的办法是把系统的平均负载监控，根据历史数据，判断负载变化趋势，当负载有明显升高趋势时，就要进行分析了</li>
+</ul>
+</li>
+<li><p>平均负载与cpu使用率：</p>
+<ul>
+<li>CPU使用率：单位时间内cpu繁忙情况</li>
+<li>对cpu密集型进程，使用大量cpu会导致平均负载升高，这时平均负载与cpu使用率是一致的</li>
+<li>io密集型进程，等待io进程会导致平均负载升高，但cpu使用率不一定高</li>
+<li>大量等待cpu进程调度也会导致平均负载升高，此时cpu使用率也会比较高</li>
+</ul>
+</li>
+</ul>
+<h4 id="平均负载分析案例"><a href="#平均负载分析案例" class="headerlink" title="平均负载分析案例"></a>平均负载分析案例</h4><blockquote>
+<p>使用iostat，mpstat，pidstat三个工具在Ubuntu系统上演示</p>
+</blockquote>
+<ul>
+<li><p>安装压力测试工具stress和工具包sysstat</p>
+<pre><code># apt install stress sysstat</code></pre></li>
+<li><p>测试场景1: cpu密集型应用</p>
+<ul>
+<li>开启三个终端，第一个终端运行stress命令<pre><code># stress --cpu 1 --timeout 600</code></pre></li>
+<li>第二个终端运行uptime命令<pre><code># watch -d uptime</code></pre></li>
+<li>第三个终端，运行mpstatmingl<pre><code># mpstat -P ALL 5   监控所以cpu，没5秒输出1次数据</code></pre></li>
+<li>第二个终端显示如下：此处会发现1分钟的平均负载会慢慢增加到1.00<pre><code>load average: 1.14, 0.95, 0.55</code></pre></li>
+<li>第三个终端效果如下：看到正好又一个cpu使用率为100%，但iowait为0<pre><code>04:44:22 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+04:44:27 PM  all   50.10    0.00    0.10    0.00    0.00    0.00    0.00    0.00    0.00   49.80
+04:44:27 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+04:44:27 PM    1    0.20    0.00    0.20    0.00    0.00    0.00    0.00    0.00    0.00   99.60</code></pre></li>
+<li>终端4:<pre><code># pidstat -u 5 1  间隔5秒后输出一组数据
+04:52:39 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+04:52:44 PM     0     20175    0.00    0.20    0.00    0.00    0.20     0  mpstat
+04:52:44 PM     0     21649  100.00    0.00    0.00    0.00  100.00     1  stress    stress进程cpu占用率为100%</code></pre><blockquote>
+<p>场景1总结，终端1启动一个cpu占用100%的进程，终端2看到负载达到1.14，终端3看到一个cpu占用100%，但iowait为0，终端4，看出占用cpu 100%的是进程stress，以上可以发现导致占用率100%的进程是stress，平均负载升高是由于cpu占用率100%导致的</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>场景2: I/O密集型进程</p>
+<ul>
+<li><p>终端1</p>
+<pre><code>stress -i 1 --timeout 600</code></pre></li>
+<li><p>终端2</p>
+<pre><code>watch -d upteme
+
+load average: 0.87, 0.47, 0.46</code></pre></li>
+<li><p>终端3</p>
+<pre><code>mpstat -P ALL 5 1
+
+05:05:32 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+05:05:37 PM  all    0.70    0.00   49.45    0.00    0.00    0.00    0.00    0.00    0.00   49.85
+05:05:37 PM    0    0.20    0.00    0.40    0.00    0.00    0.00    0.00    0.00    0.00   99.40
+05:05:37 PM    1    1.40    0.00   98.60    77.53    0.00    0.00    0.00    0.00    0.00    0.00 cpu系统占用98.6%，iowaite77.53%</code></pre></li>
+<li><p>终端4</p>
+<pre><code>pidstat -u 5 1
+
+Average:      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+Average:        0     19355    0.00    0.20    0.00    0.00    0.20     -  kworker/0:0
+Average:        0     22133    1.20   98.80    0.00    0.00  100.00     -  stress        占用率高由stress进程导致
+Average:        0     22134    0.20    0.00    0.00    0.00    0.20     -  watch
+Average:        0     22144    0.00    0.20    0.00    0.00    0.20     -  mpstat
+Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidstat</code></pre><blockquote>
+<p>场景2总结：终端1模拟io压力，终端2显示1分钟平均负载0.87，终端3显示，一个cpu占用98.6%，来自系统占用（%sys），iowait高达77.53%，终端4，看出占用率最高的进程是stress，综上得出平均负载升高是因为iowait过高导致</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>场景3: 大量进程的场景</p>
+<ul>
+<li><p>终端1:</p>
+<pre><code>stress -c 8 --timeout 600</code></pre></li>
+<li><p>终端2:</p>
+<pre><code>watch -d uptime
+
+7:18:05 up  1:17,  5 users,  load average: 6.58, 2.69, 1.37</code></pre></li>
+<li><p>终端3:<br>```<br>mpstat -P ALL 5<br>05:22:27 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle<br>05:22:32 PM  all  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>05:22:32 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>05:22:32 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</p>
+</li>
+<li><p>终端3:</p>
+<pre><code>pidstat -u 5 1
+
+05:19:08 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+05:19:13 PM     0     23074   24.85    0.00    0.00   74.75   24.85     0  stress
+05:19:13 PM     0     23075   24.65    0.00    0.00   74.55   24.65     1  stress
+05:19:13 PM     0     23076   24.85    0.00    0.00   74.75   24.85     1  stress
+05:19:13 PM     0     23077   24.85    0.00    0.00   74.95   24.85     1  stress
+05:19:13 PM     0     23078   24.85    0.00    0.00   74.75   24.85     1  stress
+05:19:13 PM     0     23079   24.85    0.00    0.00   74.35   24.85     0  stress
+05:19:13 PM     0     23080   24.85    0.00    0.00   74.55   24.85     0  stress
+05:19:13 PM     0     23081   24.85    0.00    0.00   74.55   24.85     0  stress
+05:19:13 PM     0     23319    0.00    0.20    0.00    0.20    0.20     0  pidstat
+</code></pre><blockquote>
+<p>场景3总结：终端1模拟8个进程运行，从终端2显示结果看出，cpu 1分钟平均负载高达6.58，终端3看出两个cpu占用率全部100%，终端4看出，8个stress进程争抢2个cpu资源，cpu等待时间高达74.75%，说明cpu过载</p>
+</blockquote>
+</li>
 </ul>
 </li>
 </ul>
@@ -413,7 +464,7 @@ mysql每次更新操作都需要写磁盘，在">
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/04/24/mysql%E6%97%A5%E5%BF%97/">https://www.ik8s.cc/2020/04/24/mysql%E6%97%A5%E5%BF%97/</a>
+                    <a href="https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -498,7 +549,7 @@ mysql每次更新操作都需要写磁盘，在">
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2020-04-24T00-00-00',
+        id: '2020-04-25T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -519,9 +570,61 @@ mysql每次更新操作都需要写磁盘，在">
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
+            <div class="card">
+                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="Linux优化实战之平均负载">
+                        
+                        <span class="card-title">Linux优化实战之平均负载</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            平均负载
+平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
+
+可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
+
+不可中
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            BY 木易杨
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                        <span class="chip bg-color">专栏</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
             <div class="card">
                 <a href="/2020/04/25/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">
                     <div class="card-image">
@@ -549,60 +652,8 @@ Consi
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
-                        </span>
-                        <span class="publish-author">
-                            
-                            <i class="fas fa-user fa-fw"></i>
-                            BY 木易杨
-                            
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/%E4%B8%93%E6%A0%8F/">
-                        <span class="chip bg-color">专栏</span>
-                    </a>
-                    
-                </div>
-                
-            </div>
-        </div>
-        
-        
-        <div class="article col s12 m6" data-aos="fade-up">
-            <div class="article-badge right-badge text-color">
-                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
-            </div>
-            <div class="card">
-                <a href="/2020/04/23/mysql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/">
-                    <div class="card-image">
-                        
-                        
-                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="MySQL实战之一：一条sql查询语句如何执行">
-                        
-                        <span class="card-title">MySQL实战之一：一条sql查询语句如何执行</span>
-                    </div>
-                </a>
-                <div class="card-content article-content">
-                    <div class="summary block-with-text">
-                        
-                            
-本文是极客时间mysql实战专栏的学习笔记，此文是本专栏第一篇
-
-查询语句执行过程
-MySQL分为server层和存储引擎两部分
-server层：（按执行顺序）
-连接器：管理连接，权限验证。 
-建立连接后，此连接用户拥有的权限取决于此时读
-                        
-                    </div>
-                    <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-23
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
                             </span>
                         <span class="publish-author">
                             
