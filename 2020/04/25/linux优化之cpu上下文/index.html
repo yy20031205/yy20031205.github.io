@@ -4,13 +4,9 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Linux优化实战之一：平均负载, Jemmy yang Blog">
-    <meta name="description" content="平均负载
-平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
-
-可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
-
-不可中">
+    <meta name="keywords" content="Linux系统优化之二：cpu上下文切换, Jemmy yang Blog">
+    <meta name="description" content="
+linux是一个多任务操作系统，它支持远大于cpu核心数的任务同时运行，当然，这些任务实际上并不是真正同时运行，操作系统在很短时间内，将cpu资源轮流分配给这些任务，造成多任务同时运行的错觉。每个任务运行前，cpu需要知道从哪里加载，从哪">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -18,7 +14,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Linux优化实战之一：平均负载 | Jemmy yang Blog</title>
+    <title>Linux系统优化之二：cpu上下文切换 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -245,13 +241,13 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/20.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        Linux优化实战之一：平均负载
+                        Linux系统优化之二：cpu上下文切换
                     </div>
                 </div>
             </div>
@@ -299,14 +295,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.8k
+                    2.6k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    8 分
+                    10 分
                 </div>
                 
 				
@@ -322,124 +318,100 @@
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h4 id="平均负载"><a href="#平均负载" class="headerlink" title="平均负载"></a>平均负载</h4><ul>
-<li><p>平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系</p>
-</li>
-<li><p>可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程</p>
-</li>
-<li><p>不可中断状态：处于内核态关键流程中的进程，这些进程是不可被打断的，如等待硬件设备的io相应，ps命令看到的处于D状态的进程</p>
-<ul>
-<li>当一个进程向磁盘读写数据时，为保证数据一致性，在得到磁盘回复前，他是不能被其他进程或者中断打断的，这时候的进程就处于不可中断状态</li>
-</ul>
-</li>
-<li><p>当平均负载为2，在2个cpu上，意味着所有cpu被完全占用，在4个cpu上，意味着cpu有50%的空闲，在1个cpu上，意味着一半进程竞争不到cpu</p>
-</li>
-<li><p>平均负载最理想的情况是等于cpu个数</p>
-<blockquote>
-<p>获取cpu个数命令：</p>
+                <blockquote>
+<p>linux是一个多任务操作系统，它支持远大于cpu核心数的任务同时运行，当然，这些任务实际上并不是真正同时运行，操作系统在很短时间内，将cpu资源轮流分配给这些任务，造成多任务同时运行的错觉。每个任务运行前，cpu需要知道从哪里加载，从哪里开始运行，需要系统事先设置好cpu寄存器和程序计数器，这些都是cpu在运行任务必须依赖的环境，这些也称为cpu上下文。上下文切换，先把前一个任务的cpu上下文保存起来，然后加载新任务的上下文，运行新任务，这称为上下文切换。</p>
 </blockquote>
-<pre><code>   # grep &#39;model name&#39; /proc/cpuinfo |wc -l</code></pre></li>
-<li><p>一般会给出1分钟，5分钟，10分钟三个时间内的负载情况</p>
+<h4 id="cpu上下文"><a href="#cpu上下文" class="headerlink" title="cpu上下文"></a>cpu上下文</h4><ul>
+<li><p>根据任务不同，cpu上下文切换分为以下几个：</p>
 <ul>
-<li>如果三个时间段的值基本相同，或相差不大，那就说明系统负载很平稳</li>
-<li>如果1分钟内的负载远小于15分钟的。说明系统最近1分钟内的负载在减少，而过去15分钟内却有很高的负载</li>
-<li>如果1分钟内负载远大于15的，说明最近1分钟内负载在增加，这种增加可能是临时性的，也可能会持续下去，一旦1分钟内平均负载接近或超过cpu个数，就意味着系统正在发生过载问题，这就需要分析原因，进行优化了，一般平均负载高于cpu数量70%时，就要引起注意了，更好的办法是把系统的平均负载监控，根据历史数据，判断负载变化趋势，当负载有明显升高趋势时，就要进行分析了</li>
+<li><p>进程上下文切换：</p>
+<ul>
+<li>linux按照特权等级，把进程运行空间分为内核空间和用户空间，cpu特权等级分为ring0-ring3四个环，ring0是操心系统内核空间，具有最高权限，可以访问所有资源，ring3是用户空间，只能访问受限资源，不能直接访问内存等硬件，必须通过系统调用陷入内核，由内核访问特权资源</li>
+<li>进程可以在用户空间运行，称为进程的用户态，也可以在内核空间运行，称为进程内核态，用户态转换到内核态的转变，需要系统调用完成</li>
+<li>一次系统调用过程，其实发生两次cpu上下文切换</li>
+<li>进程上下文切换，是指从一个进程切换到另一个进程。系统调用过程中，一直是同一个进程在运行</li>
 </ul>
 </li>
-<li><p>平均负载与cpu使用率：</p>
+<li><p>线程上下文切换：线程是调度的基本单位，进程是资源拥有的基本单位</p>
 <ul>
-<li>CPU使用率：单位时间内cpu繁忙情况</li>
-<li>对cpu密集型进程，使用大量cpu会导致平均负载升高，这时平均负载与cpu使用率是一致的</li>
-<li>io密集型进程，等待io进程会导致平均负载升高，但cpu使用率不一定高</li>
-<li>大量等待cpu进程调度也会导致平均负载升高，此时cpu使用率也会比较高</li>
+<li>进程只有一个线程时，可认为进程就等于线程</li>
+<li>当进程拥有多个线程时，这些线程会共享内存和全局变量等资源，这些资源在上下文切换时是不需要修改的</li>
+<li>线程也有自己的私有数据，上下文切换时，这些资源需要保存的</li>
+<li>线程上下文切换分两种情况，一是前后两个线程属于不同进程，此时资源不共享，此时与进程上下文切换是一样的，第二种情况是两个线程属于同一个进程，此时有些资源是共享的，只需要切换线程私有数据，如栈和寄存器</li>
 </ul>
 </li>
+<li><p>中断上下文切换：</p>
+<ul>
+<li>中断会打断进程的正常调度和执行，中断处理完，会把打断的进程恢复执行</li>
+<li>中断上下文并不涉及进程的用户态，中断上下文，只包括内核态内中断服务程序</li>
+<li>对于同一个cpu，中断比进程有更高优先级，故此，中断上下文与进程上下文切换不会同时发生</li>
+<li>中断上下文切换也需要消耗cpu，切换过多也会降低系统性能，这时候要去排查</li>
 </ul>
-<h4 id="平均负载分析案例"><a href="#平均负载分析案例" class="headerlink" title="平均负载分析案例"></a>平均负载分析案例</h4><blockquote>
-<p>使用iostat，mpstat，pidstat三个工具在Ubuntu系统上演示</p>
-</blockquote>
-<ul>
-<li><p>安装压力测试工具stress和工具包sysstat</p>
-<pre><code># apt install stress sysstat</code></pre></li>
-<li><p>测试场景1: cpu密集型应用</p>
-<ul>
-<li>开启三个终端，第一个终端运行stress命令<pre><code># stress --cpu 1 --timeout 600</code></pre></li>
-<li>第二个终端运行uptime命令<pre><code># watch -d uptime</code></pre></li>
-<li>第三个终端，运行mpstatmingl<pre><code># mpstat -P ALL 5   监控所以cpu，没5秒输出1次数据</code></pre></li>
-<li>第二个终端显示如下：此处会发现1分钟的平均负载会慢慢增加到1.00<pre><code>load average: 1.14, 0.95, 0.55</code></pre></li>
-<li>第三个终端效果如下：看到正好又一个cpu使用率为100%，但iowait为0<pre><code>04:44:22 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-04:44:27 PM  all   50.10    0.00    0.10    0.00    0.00    0.00    0.00    0.00    0.00   49.80
-04:44:27 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
-04:44:27 PM    1    0.20    0.00    0.20    0.00    0.00    0.00    0.00    0.00    0.00   99.60</code></pre></li>
-<li>终端4:<pre><code># pidstat -u 5 1  间隔5秒后输出一组数据
-04:52:39 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-04:52:44 PM     0     20175    0.00    0.20    0.00    0.00    0.20     0  mpstat
-04:52:44 PM     0     21649  100.00    0.00    0.00    0.00  100.00     1  stress    stress进程cpu占用率为100%</code></pre><blockquote>
-<p>场景1总结，终端1启动一个cpu占用100%的进程，终端2看到负载达到1.14，终端3看到一个cpu占用100%，但iowait为0，终端4，看出占用cpu 100%的是进程stress，以上可以发现导致占用率100%的进程是stress，平均负载升高是由于cpu占用率100%导致的</p>
-</blockquote>
 </li>
 </ul>
 </li>
-<li><p>场景2: I/O密集型进程</p>
-<ul>
-<li><p>终端1</p>
-<pre><code>stress -i 1 --timeout 600</code></pre></li>
-<li><p>终端2</p>
-<pre><code>watch -d upteme
-
-load average: 0.87, 0.47, 0.46</code></pre></li>
-<li><p>终端3</p>
-<pre><code>mpstat -P ALL 5 1
-
-05:05:32 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-05:05:37 PM  all    0.70    0.00   49.45    0.00    0.00    0.00    0.00    0.00    0.00   49.85
-05:05:37 PM    0    0.20    0.00    0.40    0.00    0.00    0.00    0.00    0.00    0.00   99.40
-05:05:37 PM    1    1.40    0.00   98.60    77.53    0.00    0.00    0.00    0.00    0.00    0.00 cpu系统占用98.6%，iowaite77.53%</code></pre></li>
-<li><p>终端4</p>
-<pre><code>pidstat -u 5 1
-
-Average:      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-Average:        0     19355    0.00    0.20    0.00    0.00    0.20     -  kworker/0:0
-Average:        0     22133    1.20   98.80    0.00    0.00  100.00     -  stress        占用率高由stress进程导致
-Average:        0     22134    0.20    0.00    0.00    0.00    0.20     -  watch
-Average:        0     22144    0.00    0.20    0.00    0.00    0.20     -  mpstat
-Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidstat</code></pre><blockquote>
-<p>场景2总结：终端1模拟io压力，终端2显示1分钟平均负载0.87，终端3显示，一个cpu占用98.6%，来自系统占用（%sys），iowait高达77.53%，终端4，看出占用率最高的进程是stress，综上得出平均负载升高是因为iowait过高导致</p>
-</blockquote>
+<li><p>上下文切换需要一定时间，这时间很短，但如果上下文切换频繁时，导致cpu将大量时间用在上下文切换上，进而大大缩短真正运行进程时间，这也是导致cpu平均负载升高的一个重要因素</p>
 </li>
+<li><p>什么时候会发生上下文切换？</p>
+<ul>
+<li>只有在进程调度的时候，才需要进行上下文切换，linux系统为每个cpu都维护了一个就绪队列，将活跃进程（正在运行和正在等待运行的进程）按优先级和等待cpu的时间排序，按调度算法，选择优先级高的进程来运行</li>
 </ul>
 </li>
-<li><p>场景3: 大量进程的场景</p>
+<li><p>cpu调度</p>
 <ul>
-<li><p>终端1:</p>
-<pre><code>stress -c 8 --timeout 600</code></pre></li>
-<li><p>终端2:</p>
-<pre><code>watch -d uptime
-
-7:18:05 up  1:17,  5 users,  load average: 6.58, 2.69, 1.37</code></pre></li>
-<li><p>终端3:</p>
-<pre><code>mpstat -P ALL 5
-05:22:27 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-05:22:32 PM  all  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
-05:22:32 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
-05:22:32 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</code></pre></li>
-<li><p>终端4:</p>
-<pre><code>pidstat -u 5 1
-
-05:19:08 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-05:19:13 PM     0     23074   24.85    0.00    0.00   74.75   24.85     0  stress
-05:19:13 PM     0     23075   24.65    0.00    0.00   74.55   24.65     1  stress
-05:19:13 PM     0     23076   24.85    0.00    0.00   74.75   24.85     1  stress
-05:19:13 PM     0     23077   24.85    0.00    0.00   74.95   24.85     1  stress
-05:19:13 PM     0     23078   24.85    0.00    0.00   74.75   24.85     1  stress
-05:19:13 PM     0     23079   24.85    0.00    0.00   74.35   24.85     0  stress
-05:19:13 PM     0     23080   24.85    0.00    0.00   74.55   24.85     0  stress
-05:19:13 PM     0     23081   24.85    0.00    0.00   74.55   24.85     0  stress
-05:19:13 PM     0     23319    0.00    0.20    0.00    0.20    0.20     0  pidstat
-</code></pre><blockquote>
-<p>场景3总结：终端1模拟8个进程运行，从终端2显示结果看出，cpu 1分钟平均负载高达6.58，终端3看出两个cpu占用率全部100%，终端4看出，8个stress进程争抢2个cpu资源，cpu等待时间高达74.75%，说明cpu过载</p>
-</blockquote>
+<li>为保证进程调度，cpu时间被划分为一段段时间片，时间片分配给进程，当一个进程时间片耗尽了，就会被系统挂起，切换到其他等待的cpu的进程运行</li>
+<li>进程在系统资源不足时，要等资源满足后才可以运行，此时进程也会挂起，系统调度其他进程运行</li>
+<li>进程通过sleep函数将自己主动挂起时，自然也会重新调度</li>
+<li>当有更高优先级的进程需要运行时，当前进程也会被挂起，运行高优先级进程</li>
+<li>发生硬件中断，进程会被中断挂起，转而执行中断程序</li>
+</ul>
 </li>
+</ul>
+<ul>
+<li><strong>由上面可以看出，，虽然同为上下文切换，同进程内的线程切换，要比多进程的切换消耗跟少的资源，这也正是多线程代替多进程的一个优势</strong></li>
+</ul>
+<h3 id="如何查看系统上下文切换情况"><a href="#如何查看系统上下文切换情况" class="headerlink" title="如何查看系统上下文切换情况"></a>如何查看系统上下文切换情况</h3><ul>
+<li><p>vmstat命令是常用的工具，命令结果如下：</p>
+<pre><code># vmstat 5
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+r  b   swpd   free   buff  cache   si   so    bi     bo   in   cs us sy id   wa st
+0  0      0 360340  14456 1251768    0    0    24    35   70   97  6  2 92   0  0
+0  0      0 360340  14456 1251804    0    0     0     0   96  165  0  0 100  0  0
+0  0      0 360276  14456 1251804    0    0     0    63   94  155  0  0 100  0  0
+
+cs: 每秒上下文切换次数
+in：每秒中断次数
+r：就绪队列长度，就是正在运行和等待cpu进程数
+b：处于不可中断睡眠状态的进程数</code></pre></li>
+<li><p>vmstat只给出系统总体上下文切换情况，要看每个进程情况，要使用pidstat</p>
+<pre><code># pidstat -w 5
+08:30:36 PM   UID       PID   cswch/s nvcswch/s  Command
+08:30:41 PM     0         8     12.75      0.00  rcu_sched
+08:30:41 PM     0        11      0.20      0.00  watchdog/0
+08:30:41 PM     0        14      0.20      0.00  watchdog/1
+08:30:41 PM     0       321      0.20      0.00  kworker/0:1H
+08:30:41 PM     0       459     17.73      0.00  xfsaild/sda4
+</code></pre></li>
+</ul>
+<p>cswch/s:每秒自愿上下文切换次数<br>nvcswch/s:每秒非自愿上下文切换次数<br>自愿上下文切换：进程无法获取所需自愿，导致的上下文切换，如：i/o，内存等系统资源不足，会发生自愿上下文切换<br>非自愿上下文切换：由于进程时间片已到，被系统强制调度，进而发生上下文切换，如大量进程争抢cpu，就容易发生非自愿上下文切换</p>
+<pre><code>#### 案例分析
+
+* 使用sysbench模拟多线程切换调度情况，使用vmstat和pidstat工具进行分析，开启三个终端
+* 第一个终端上：</code></pre><h1 id="sysbench-–threads-10-–max-time-300-threads-run"><a href="#sysbench-–threads-10-–max-time-300-threads-run" class="headerlink" title="sysbench –threads=10 –max-time=300 threads run"></a>sysbench –threads=10 –max-time=300 threads run</h1><pre><code>* 第二个终端上：</code></pre><h1 id="vmstat-1"><a href="#vmstat-1" class="headerlink" title="vmstat 1"></a>vmstat 1</h1><p>procs ———–memory———- —swap– —–io—- -system– ——cpu—–<br> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs     us sy id wa st<br> 8  0      0 350592  14456 1253500    0    0    22    34   72  798    6  2  92  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 5701 1538551 11 89  0  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 5674 1619777 15 86  0  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 5197 1563957 14 86  0  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 4767 1600961 14 86  0  0  0</p>
+<pre><code>&gt;从终端2可以看出，cs（上下文切换）上升到153万，r（就绪队列）达到7，远超cpu个数2，所以会有大量cpu竞争，us和sy加起来达到100%，系统（sy）cpu占用率达到86%，说明cpu主要被系统（内核）占用，中断次数（in）达到5701，综上所述，系统的就绪队列过长，达到7，远大于cpu个数2，这会导致大量上下文切换，大量切换进而导致cpu系统占用过高，但到底是哪个进程导致的，需要进行下一步分析
+&gt;中断次数达到5700，要查看中断情况，需要查看/proc/interrupts,如下所示，变化最快的是RES，达到230多万，这中断类型是重调度中断，这种类型表示，唤醒空闲状态cpu来调度新任务运行，在多处理器系统中，调度器用来分散任务到不同cpu机制，通常也被称为处理器中断
+* 查看中断情况：</code></pre><h1 id="cat-proc-interrupts"><a href="#cat-proc-interrupts" class="headerlink" title="cat /proc/interrupts"></a>cat /proc/interrupts</h1><p>….         CPU0       CPU1<br>NMI:          0          0   Non-maskable interrupts<br> LOC:    1490665    1283555   Local timer interrupts<br> SPU:          0          0   Spurious interrupts<br> PMI:          0          0   Performance monitoring interrupts<br> IWI:          0          0   IRQ work interrupts<br> RTR:          0          0   APIC ICR read retries<br> RES:    2306244    2366613   Rescheduling interrupts<br> CAL:       3081       3575   Function call interrupts<br> TLB:        161        241   TLB shootdowns<br> TRM:          0          0   Thermal event interrupts<br> THR:          0          0   Threshold APIC interrupts<br> DFR:          0          0   Deferred Error APIC interrupts<br> MCE:          0          0   Machine check exceptions<br> MCP:         71         72   Machine check polls<br> HYP:          0          0   Hypervisor callback interrupts<br> ERR:          0<br> MIS:          0<br> PIN:          0          0   Posted-interrupt notification event<br> NPI:          0          0   Nested posted-interrupt event<br> PIW:          0          0   Posted-interrupt wakeup event</p>
+<pre><code>* 在第三个终端上，使用pidstat观察</code></pre><h1 id="pidstat-w-u-1"><a href="#pidstat-w-u-1" class="headerlink" title="pidstat -w -u 1"></a>pidstat -w -u 1</h1><p>08:45:20 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command<br>08:45:21 PM     0     27328    0.00    1.00    0.00    0.00    1.00     0  kworker/u256:1<br>08:45:21 PM     0     27491    0.00    1.00    0.00    0.00    1.00     1  sshd<br>08:45:21 PM     0     27761   28.00  100.00    0.00    0.00  100.00     1  sysbench<br>08:45:21 PM     0     27793    0.00    1.00    0.00    3.00    1.00     1  pidstat</p>
+<p>08:45:20 PM   UID       PID   cswch/s nvcswch/s  Command<br>08:45:21 PM     0         8     19.00      0.00  rcu_sched<br>08:45:21 PM     0        16      2.00      0.00  ksoftirqd/1<br>08:45:21 PM     0       459     18.00      0.00  xfsaild/sda4<br>08:45:21 PM     0       983     10.00      0.00  vmtoolsd<br>08:45:21 PM   115      1408      1.00      0.00  snmpd<br>08:45:21 PM     0     27328    242.00      0.00  kworker/u256:1<br>08:45:21 PM     0     27400      6.00      0.00  kworker/0:0<br>08:45:21 PM     0     27491    128.00      1.00  sshd<br>08:45:21 PM     0     27772      3.00      0.00  kworker/1:0<br>08:45:21 PM     0     27793      1.00    237.00  pidstat</p>
+<pre><code>&gt;从pidstat输出可以看出，sysbench的cpu系统占用率（%system）达到100%，上下文切换来自其他进程，非自愿上下文切换(nvcswch)最高的是pidstat，达到237，自愿上下文切换(cswch)最高的是kworker和sshd
+
+** pidstat默认显示进程指标数据，若要显示线程数据，要使用-t选项，所以第三个终端命令建议使用：</code></pre><h1 id="pidstat-wt-u-1"><a href="#pidstat-wt-u-1" class="headerlink" title="pidstat -wt -u 1"></a>pidstat -wt -u 1</h1><p>```</p>
+<h4 id="上下文切换啥情况才算正常"><a href="#上下文切换啥情况才算正常" class="headerlink" title="上下文切换啥情况才算正常"></a>上下文切换啥情况才算正常</h4><ul>
+<li>主要取决于系统本身的cpu性能，如果系统上下文切换次数稳定，从几百到一万以内，但如果次数超过一万，或者次数出现数量级增长，就可能出现性能问题</li>
+<li>需要根据上下文切换类型，做具体分析<ul>
+<li>自愿上下文切换变多，说明进程在等待资源，可能发生io问题</li>
+<li>非自愿上下文切换变多，说明进程被强制调度，也就是在争cpu，说明cpu成为瓶颈</li>
+<li>中断次数变多，说明cpu被中断程序占用，还需要查看/proc/interrups文件来分析中断类型</li>
 </ul>
 </li>
 </ul>
@@ -468,7 +440,7 @@ Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidst
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/</a>
+                    <a href="https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E4%B8%8A%E4%B8%8B%E6%96%87/">https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E4%B8%8A%E4%B8%8B%E6%96%87/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -574,9 +546,10 @@ Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidst
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
                 <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E4%B8%8A%E4%B8%8B%E6%96%87/">
                     <div class="card-image">
@@ -595,9 +568,9 @@ linux是一个多任务操作系统，它支持远大于cpu核心数的任务同
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -606,6 +579,7 @@ linux是一个多任务操作系统，它支持远大于cpu核心数的任务同
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -624,29 +598,24 @@ linux是一个多任务操作系统，它支持远大于cpu核心数的任务同
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2020/04/25/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">
+                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="MySQL实战之三：事务隔离">
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="Linux优化实战之一：平均负载">
                         
-                        <span class="card-title">MySQL实战之三：事务隔离</span>
+                        <span class="card-title">Linux优化实战之一：平均负载</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            
-本文是mysql实战专栏第三篇
+                            平均负载
+平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
 
-事务隔离，为什么你改了我还看不见？
-事务是要保证一组数据库操作，要么全部成功，要么全部失败，在mysql中，事务支持是在存储引擎层实现
+可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
 
-隔离性与隔离级别
-隔离性
-
-Atomicity:原子性
-Consi
+不可中
                         
                     </div>
                     <div class="publish-info">
