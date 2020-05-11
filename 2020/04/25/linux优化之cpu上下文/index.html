@@ -367,23 +367,19 @@ linux是一个多任务操作系统，它支持远大于cpu核心数的任务同
 </ul>
 </li>
 </ul>
-<ul>
-<li><strong>由上面可以看出，，虽然同为上下文切换，同进程内的线程切换，要比多进程的切换消耗跟少的资源，这也正是多线程代替多进程的一个优势</strong></li>
-</ul>
-<h3 id="如何查看系统上下文切换情况"><a href="#如何查看系统上下文切换情况" class="headerlink" title="如何查看系统上下文切换情况"></a>如何查看系统上下文切换情况</h3><ul>
-<li><p>vmstat命令是常用的工具，命令结果如下：</p>
+<p><strong>由上面可以看出，，虽然同为上下文切换，同进程内的线程切换，要比多进程的切换消耗跟少的资源，这也正是多线程代替多进程的一个优势</strong></p>
+<h3 id="如何查看系统上下文切换情况"><a href="#如何查看系统上下文切换情况" class="headerlink" title="如何查看系统上下文切换情况"></a>如何查看系统上下文切换情况</h3><p><strong>vmstat命令是常用的工具，命令结果如下：</strong></p>
 <pre><code># vmstat 5
 procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
-r  b   swpd   free   buff  cache   si   so    bi     bo   in   cs us sy id   wa st
-0  0      0 360340  14456 1251768    0    0    24    35   70   97  6  2 92   0  0
-0  0      0 360340  14456 1251804    0    0     0     0   96  165  0  0 100  0  0
-0  0      0 360276  14456 1251804    0    0     0    63   94  155  0  0 100  0  0
+ r  b   swpd   free   buff  cache   si   so    bi     bo   in   cs us sy id   wa st
+ 0  0      0 360340  14456 1251768    0    0    24    35   70   97  6  2 92   0  0
+ 0  0      0 360340  14456 1251804    0    0     0     0   96  165  0  0 100  0  0
+ 0  0      0 360276  14456 1251804    0    0     0    63   94  155  0  0 100  0  0
 
-cs: 每秒上下文切换次数
-in：每秒中断次数
-r：就绪队列长度，就是正在运行和等待cpu进程数
-b：处于不可中断睡眠状态的进程数</code></pre></li>
-<li><p>vmstat只给出系统总体上下文切换情况，要看每个进程情况，要使用pidstat</p>
+ cs: 每秒上下文切换次数
+ in：每秒中断次数
+ r：就绪队列长度，就是正在运行和等待cpu进程数
+ b：处于不可中断睡眠状态的进程数</code></pre><p><strong>vmstat只给出系统总体上下文切换情况，要看每个进程情况，要使用pidstat</strong></p>
 <pre><code># pidstat -w 5
 08:30:36 PM   UID       PID   cswch/s nvcswch/s  Command
 08:30:41 PM     0         8     12.75      0.00  rcu_sched
@@ -391,22 +387,67 @@ b：处于不可中断睡眠状态的进程数</code></pre></li>
 08:30:41 PM     0        14      0.20      0.00  watchdog/1
 08:30:41 PM     0       321      0.20      0.00  kworker/0:1H
 08:30:41 PM     0       459     17.73      0.00  xfsaild/sda4
-</code></pre></li>
-</ul>
-<p>cswch/s:每秒自愿上下文切换次数<br>nvcswch/s:每秒非自愿上下文切换次数<br>自愿上下文切换：进程无法获取所需自愿，导致的上下文切换，如：i/o，内存等系统资源不足，会发生自愿上下文切换<br>非自愿上下文切换：由于进程时间片已到，被系统强制调度，进而发生上下文切换，如大量进程争抢cpu，就容易发生非自愿上下文切换</p>
-<pre><code>#### 案例分析
+cswch/s:每秒自愿上下文切换次数
+nvcswch/s:每秒非自愿上下文切换次数
+自愿上下文切换：进程无法获取所需自愿，导致的上下文切换，如：i/o，内存等系统资源不足，会发生自愿上下文切换
+非自愿上下文切换：由于进程时间片已到，被系统强制调度，进而发生上下文切换，如大量进程争抢cpu，就容易发生非自愿上下文切换</code></pre><h4 id="案例分析"><a href="#案例分析" class="headerlink" title="案例分析"></a>案例分析</h4><p><strong>使用sysbench模拟多线程切换调度情况，使用vmstat和pidstat工具进行分析，开启三个终端</strong><br><strong>第一个终端上：</strong></p>
+<pre class=" language-bash"><code class="language-bash"><span class="token comment" spellcheck="true"># sysbench --threads=10 --max-time=300 threads run</span></code></pre>
+<p><strong>第二个终端上：</strong></p>
+<pre><code>
+# vmstat 1
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs     us sy id wa st
+ 8  0      0 350592  14456 1253500    0    0    22    34   72  798    6  2  92  0  0
+ 7  0      0 350592  14456 1253500    0    0     0     0 5701 1538551 11 89  0  0  0
+ 7  0      0 350592  14456 1253500    0    0     0     0 5674 1619777 15 86  0  0  0
+ 7  0      0 350592  14456 1253500    0    0     0     0 5197 1563957 14 86  0  0  0
+ 7  0      0 350592  14456 1253500    0    0     0     0 4767 1600961 14 86  0  0  0</code></pre><blockquote>
+<p>从终端2可以看出，cs（上下文切换）上升到153万，r（就绪队列）达到7，远超cpu个数2，所以会有大量cpu竞争，us和sy加起来达到100%，系统（sy）cpu占用率达到86%，说明cpu主要被系统（内核）占用，中断次数（in）达到5701，综上所述，系统的就绪队列过长，达到7，远大于cpu个数2，这会导致大量上下文切换，大量切换进而导致cpu系统占用过高，但到底是哪个进程导致的，需要进行下一步分析<br>中断次数达到5700，要查看中断情况，需要查看/proc/interrupts,如下所示，变化最快的是RES，达到230多万，这中断类型是重调度中断，这种类型表示，唤醒空闲状态cpu来调度新任务运行，在多处理器系统中，调度器用来分散任务到不同cpu机制，通常也被称为处理器中断<br><strong>查看中断情况：</strong></p>
+</blockquote>
+<pre><code># cat /proc/interrupts
+....         CPU0       CPU1
+NMI:          0          0   Non-maskable interrupts
+ LOC:    1490665    1283555   Local timer interrupts
+ SPU:          0          0   Spurious interrupts
+ PMI:          0          0   Performance monitoring interrupts
+ IWI:          0          0   IRQ work interrupts
+ RTR:          0          0   APIC ICR read retries
+ RES:    2306244    2366613   Rescheduling interrupts
+ CAL:       3081       3575   Function call interrupts
+ TLB:        161        241   TLB shootdowns
+ TRM:          0          0   Thermal event interrupts
+ THR:          0          0   Threshold APIC interrupts
+ DFR:          0          0   Deferred Error APIC interrupts
+ MCE:          0          0   Machine check exceptions
+ MCP:         71         72   Machine check polls
+ HYP:          0          0   Hypervisor callback interrupts
+ ERR:          0
+ MIS:          0
+ PIN:          0          0   Posted-interrupt notification event
+ NPI:          0          0   Nested posted-interrupt event
+ PIW:          0          0   Posted-interrupt wakeup event</code></pre><p><strong>在第三个终端上，使用pidstat观察</strong></p>
+<pre><code># pidstat -w -u 1
+08:45:20 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+08:45:21 PM     0     27328    0.00    1.00    0.00    0.00    1.00     0  kworker/u256:1
+08:45:21 PM     0     27491    0.00    1.00    0.00    0.00    1.00     1  sshd
+08:45:21 PM     0     27761   28.00  100.00    0.00    0.00  100.00     1  sysbench
+08:45:21 PM     0     27793    0.00    1.00    0.00    3.00    1.00     1  pidstat
 
-* 使用sysbench模拟多线程切换调度情况，使用vmstat和pidstat工具进行分析，开启三个终端
-* 第一个终端上：</code></pre><h1 id="sysbench-–threads-10-–max-time-300-threads-run"><a href="#sysbench-–threads-10-–max-time-300-threads-run" class="headerlink" title="sysbench –threads=10 –max-time=300 threads run"></a>sysbench –threads=10 –max-time=300 threads run</h1><pre><code>* 第二个终端上：</code></pre><h1 id="vmstat-1"><a href="#vmstat-1" class="headerlink" title="vmstat 1"></a>vmstat 1</h1><p>procs ———–memory———- —swap– —–io—- -system– ——cpu—–<br> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs     us sy id wa st<br> 8  0      0 350592  14456 1253500    0    0    22    34   72  798    6  2  92  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 5701 1538551 11 89  0  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 5674 1619777 15 86  0  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 5197 1563957 14 86  0  0  0<br> 7  0      0 350592  14456 1253500    0    0     0     0 4767 1600961 14 86  0  0  0</p>
-<pre><code>&gt;从终端2可以看出，cs（上下文切换）上升到153万，r（就绪队列）达到7，远超cpu个数2，所以会有大量cpu竞争，us和sy加起来达到100%，系统（sy）cpu占用率达到86%，说明cpu主要被系统（内核）占用，中断次数（in）达到5701，综上所述，系统的就绪队列过长，达到7，远大于cpu个数2，这会导致大量上下文切换，大量切换进而导致cpu系统占用过高，但到底是哪个进程导致的，需要进行下一步分析
-&gt;中断次数达到5700，要查看中断情况，需要查看/proc/interrupts,如下所示，变化最快的是RES，达到230多万，这中断类型是重调度中断，这种类型表示，唤醒空闲状态cpu来调度新任务运行，在多处理器系统中，调度器用来分散任务到不同cpu机制，通常也被称为处理器中断
-* 查看中断情况：</code></pre><h1 id="cat-proc-interrupts"><a href="#cat-proc-interrupts" class="headerlink" title="cat /proc/interrupts"></a>cat /proc/interrupts</h1><p>….         CPU0       CPU1<br>NMI:          0          0   Non-maskable interrupts<br> LOC:    1490665    1283555   Local timer interrupts<br> SPU:          0          0   Spurious interrupts<br> PMI:          0          0   Performance monitoring interrupts<br> IWI:          0          0   IRQ work interrupts<br> RTR:          0          0   APIC ICR read retries<br> RES:    2306244    2366613   Rescheduling interrupts<br> CAL:       3081       3575   Function call interrupts<br> TLB:        161        241   TLB shootdowns<br> TRM:          0          0   Thermal event interrupts<br> THR:          0          0   Threshold APIC interrupts<br> DFR:          0          0   Deferred Error APIC interrupts<br> MCE:          0          0   Machine check exceptions<br> MCP:         71         72   Machine check polls<br> HYP:          0          0   Hypervisor callback interrupts<br> ERR:          0<br> MIS:          0<br> PIN:          0          0   Posted-interrupt notification event<br> NPI:          0          0   Nested posted-interrupt event<br> PIW:          0          0   Posted-interrupt wakeup event</p>
-<pre><code>* 在第三个终端上，使用pidstat观察</code></pre><h1 id="pidstat-w-u-1"><a href="#pidstat-w-u-1" class="headerlink" title="pidstat -w -u 1"></a>pidstat -w -u 1</h1><p>08:45:20 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command<br>08:45:21 PM     0     27328    0.00    1.00    0.00    0.00    1.00     0  kworker/u256:1<br>08:45:21 PM     0     27491    0.00    1.00    0.00    0.00    1.00     1  sshd<br>08:45:21 PM     0     27761   28.00  100.00    0.00    0.00  100.00     1  sysbench<br>08:45:21 PM     0     27793    0.00    1.00    0.00    3.00    1.00     1  pidstat</p>
-<p>08:45:20 PM   UID       PID   cswch/s nvcswch/s  Command<br>08:45:21 PM     0         8     19.00      0.00  rcu_sched<br>08:45:21 PM     0        16      2.00      0.00  ksoftirqd/1<br>08:45:21 PM     0       459     18.00      0.00  xfsaild/sda4<br>08:45:21 PM     0       983     10.00      0.00  vmtoolsd<br>08:45:21 PM   115      1408      1.00      0.00  snmpd<br>08:45:21 PM     0     27328    242.00      0.00  kworker/u256:1<br>08:45:21 PM     0     27400      6.00      0.00  kworker/0:0<br>08:45:21 PM     0     27491    128.00      1.00  sshd<br>08:45:21 PM     0     27772      3.00      0.00  kworker/1:0<br>08:45:21 PM     0     27793      1.00    237.00  pidstat</p>
-<pre><code>&gt;从pidstat输出可以看出，sysbench的cpu系统占用率（%system）达到100%，上下文切换来自其他进程，非自愿上下文切换(nvcswch)最高的是pidstat，达到237，自愿上下文切换(cswch)最高的是kworker和sshd
-
-** pidstat默认显示进程指标数据，若要显示线程数据，要使用-t选项，所以第三个终端命令建议使用：</code></pre><h1 id="pidstat-wt-u-1"><a href="#pidstat-wt-u-1" class="headerlink" title="pidstat -wt -u 1"></a>pidstat -wt -u 1</h1><p>```</p>
-<h4 id="上下文切换啥情况才算正常"><a href="#上下文切换啥情况才算正常" class="headerlink" title="上下文切换啥情况才算正常"></a>上下文切换啥情况才算正常</h4><ul>
+08:45:20 PM   UID       PID   cswch/s nvcswch/s  Command
+08:45:21 PM     0         8     19.00      0.00  rcu_sched
+08:45:21 PM     0        16      2.00      0.00  ksoftirqd/1
+08:45:21 PM     0       459     18.00      0.00  xfsaild/sda4
+08:45:21 PM     0       983     10.00      0.00  vmtoolsd
+08:45:21 PM   115      1408      1.00      0.00  snmpd
+08:45:21 PM     0     27328    242.00      0.00  kworker/u256:1
+08:45:21 PM     0     27400      6.00      0.00  kworker/0:0
+08:45:21 PM     0     27491    128.00      1.00  sshd
+08:45:21 PM     0     27772      3.00      0.00  kworker/1:0
+08:45:21 PM     0     27793      1.00    237.00  pidstat</code></pre><blockquote>
+<p>从pidstat输出可以看出，sysbench的cpu系统占用率（%system）达到100%，上下文切换来自其他进程，非自愿上下文切换(nvcswch)最高的是pidstat，达到237，自愿上下文切换(cswch)最高的是kworker和sshd</p>
+</blockquote>
+<p><strong>pidstat默认显示进程指标数据，若要显示线程数据，要使用-t选项，所以第三个终端命令建议使用：</strong></p>
+<pre><code># pidstat -wt -u 1</code></pre><h4 id="上下文切换啥情况才算正常"><a href="#上下文切换啥情况才算正常" class="headerlink" title="上下文切换啥情况才算正常"></a>上下文切换啥情况才算正常</h4><ul>
 <li>主要取决于系统本身的cpu性能，如果系统上下文切换次数稳定，从几百到一万以内，但如果次数超过一万，或者次数出现数量级增长，就可能出现性能问题</li>
 <li>需要根据上下文切换类型，做具体分析<ul>
 <li>自愿上下文切换变多，说明进程在等待资源，可能发生io问题</li>
