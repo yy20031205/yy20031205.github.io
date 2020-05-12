@@ -4,14 +4,16 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Linux系统优化之四：cpu使用率高，为啥找不到元凶？, Jemmy yang Blog">
+    <meta name="keywords" content="Linux系统优化之四：如何处理大量不可中断进程和僵尸进程, Jemmy yang Blog">
     <meta name="description" content="
-当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路
+之前的专栏讨论了cpu使用率高的问题，根据之前专栏的相关介绍，其实等待I/O的cpu使用率(简称iowait)升高，也是常见的性能问题，本文就讨论下这个问题
 
-案例实验环境说明
-以nginx+php服务为例，使用docker跑对应的服务
+进程状态top工具显示结果说明
 
-案例操作及分析过程# ">
+top输出结果R列相关状态说明
+
+
+R：ru">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -19,7 +21,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Linux系统优化之四：cpu使用率高，为啥找不到元凶？ | Jemmy yang Blog</title>
+    <title>Linux系统优化之四：如何处理大量不可中断进程和僵尸进程 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -246,13 +248,13 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/4.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/20.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        Linux系统优化之四：cpu使用率高，为啥找不到元凶？
+                        Linux系统优化之四：如何处理大量不可中断进程和僵尸进程
                     </div>
                 </div>
             </div>
@@ -300,14 +302,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.3k
+                    2.1k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    6 分
+                    8 分
                 </div>
                 
 				
@@ -324,99 +326,94 @@
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <blockquote>
-<p>当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路</p>
+<p>之前的专栏讨论了cpu使用率高的问题，根据之前专栏的相关介绍，其实等待I/O的cpu使用率(简称iowait)升高，也是常见的性能问题，本文就讨论下这个问题</p>
 </blockquote>
-<h4 id="案例实验环境说明"><a href="#案例实验环境说明" class="headerlink" title="案例实验环境说明"></a>案例实验环境说明</h4><ul>
-<li>以nginx+php服务为例，使用docker跑对应的服务</li>
+<h3 id="进程状态"><a href="#进程状态" class="headerlink" title="进程状态"></a>进程状态</h3><p><strong>top工具显示结果说明</strong></p>
+<ul>
+<li>top输出结果R列相关状态说明</li>
 </ul>
-<h4 id="案例操作及分析过程"><a href="#案例操作及分析过程" class="headerlink" title="案例操作及分析过程"></a>案例操作及分析过程</h4><pre><code># docker run -it -d --name nginx -p 10000:80 feisky/nginx:sp
+<ul>
+<li>R：running的缩写，表示进程在cpu就绪队列中，正在运行或者正在等待运行</li>
+<li>D：disk sleep缩写，也就是不可中断睡眠，表示进程在与硬件交互，且在交互过程中不允许被其他进程或中断打断</li>
+<li>Z：zombie缩写，僵尸进程，，就是进程结束了，但是其父进程还没有回收他的资源，比如进程描述符，pid等</li>
+<li>S：interruptible sleep缩写，就是可中断睡眠，表示进程因为某个事件被系统挂起，当进程的事件发生时，它会被唤醒并进入R状态</li>
+<li>I：idle的缩写，就是空闲状态，用在不可中断睡眠的内核线程上，硬件交互导致的不可中断进程用D表示，对于某些内核线程来说，他们可能实际并没有任何负载，用idle就是为了区分这种情况。D状态的进程会导致平均负载升高，I状态的进程不会</li>
+</ul>
+<p><strong>除了以上5个状态之外，还有下面两个状态</strong></p>
+<ul>
+<li>T：t，stopped或者traced缩写，表示进程处于暂停或跟踪状态。向一个进程发送SIGSTOP信号，该进程会变成暂停状态(stopped)，再发送SIGCONT信号，进程恢复运行，如果进程是终端里直接启动，则需要你用fg命令恢复到前台运行；当你用gdb调试一个进程时，再使用断点中断进程后，进程就变成跟踪状态(traced)，这也是一种特殊的暂停状态</li>
+<li>X：dead缩写，表示进程已经消亡，不会在top或ps中看到此进程</li>
+</ul>
+<p><strong>不可中断状态，是为保证进程数据与硬件状态一致，正常情况下，不可中断状态会在短时间内结束，所以，短时的不可中断状态，算正常现象，但如果系统或硬件发送故障，进程会长时间在不可中断睡眠状态，甚至导致出现大量不可中断睡眠进程，这时就要引起注意</strong></p>
+<p><strong>僵尸进程，是多进程应用很容易碰到的问题，正常情况，当一个进程创建了子进程，它应该通过系统调用wait()或waitpid()等待子进程结束，回收子进程资源；子进程结束，会向它的父进程发送SIGCHLD信号，所以，父进程还可以注册SIGCHLD信号处理函数，异步回收资源，如果父进程没这么做，或者子进程执行太快，父进程没来得及处理子进程状态，子进程就已经提前退出，那此时子进程就变成僵尸进程。通常僵尸进程持续时间较短，在父进程回收他的资源后就会消失，或者父进程退出后，由init进程回收后也会消亡，一旦父进程没有处理子进程的终止，还一直处于运行状态，那子进程就会一直处于僵尸状态，大量僵尸进程会用尽pid，导致新进程不能被创建，所以一定要避免</strong></p>
+<h3 id="案例分析"><a href="#案例分析" class="headerlink" title="案例分析"></a>案例分析</h3><p><strong>环境说明</strong></p>
+<ul>
+<li>使用docker运行应用，另外需要使用dstat工具</li>
+</ul>
+<p><strong>操作分析</strong></p>
+<pre><code># docker run -it -d --privileged --name=app feisky/app:iowait
+# ps aux |grep /app
+root       4030  0.0  0.0   4512  1620 pts/0    Ss+  17:18   0:00 /app
 
-# docker run -it -d --name phpfpm --network container:nginx feisky/php-fpm:sp
-
-# curl http:10.0.11.12:10000   10.0.11.2是宿主机地址，访问返回下面这个表示容器运行成功
-It works!
-
-# ab -c100 -n1000 http://10.0.11.12:10000/
-
-Concurrency Level:      100
-Time taken for tests:   7.439 seconds
-Complete requests:      1000
-Failed requests:        0
-Total transferred:      172000 bytes
-HTML transferred:       9000 bytes
-Requests per second:    134.43 [#/sec] (mean)
-Time per request:       743.867 [ms] (mean)
-Time per request:       7.439 [ms] (mean, across all concurrent requests)
-Transfer rate:          22.58 [Kbytes/sec] received
-
-nginx 每秒请求次数为134
-
-# ab -c 5 -t 600 http://10.0.11.12:10000/
-
-top命令：
-
-top - 12:44:53 up 10:55,  3 users,  load average: 5.15, 2.63, 1.07
-Tasks: 213 total,   6 running, 115 sleeping,   0 stopped,   0 zombie
-%Cpu(s): 72.4 us, 20.8 sy,  0.0 ni,  4.7 id,  0.0 wa,  0.0 hi,  2.0 si,  0.0 st
-KiB Mem :  2017512 total,   415696 free,   548644 used,  1053172 buff/cache
-KiB Swap:  2047996 total,  2047472 free,      524 used.  1288324 avail Mem
+Ss+ : S表示可中断睡眠状态，s表示此进程是一个会话领导进程，+表示前台进程组
+</code></pre><p><strong>进程组：表示一组相互关联的进程，比如每个子进程都是父进程所在组成员</strong><br><strong>会话：共享同一个控制终端的一个或多个进程组，ssh登陆服务器，就会打开一个控制终端，这个终端就对应一个会话，在终端运行的命令及其它们的子进程，就构成一个个进程组，后台运行的命令，构成后台进程组，在前台运行的命令，构成前台进程组</strong></p>
+<p><strong>运行top命令，按1，切换显示所以cpu使用情况</strong></p>
+<pre><code>top - 17:32:57 up 12:39,  3 users,  load average: 2.65, 2.45, 1.63
+Tasks: 537 total,   1 running,  96 sleeping,   0 stopped, 348 zombie
+%Cpu0  :  0.3 us, 23.4 sy,  0.0 ni, 34.4 id, 41.8 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu1  :  0.3 us, 18.3 sy,  0.0 ni, 42.2 id,  3.8 wa,  0.0 hi, 35.3 si,  0.0 st
+KiB Mem :  2017512 total,   503812 free,   496220 used,  1017480 buff/cache
+KiB Swap:  2047996 total,  2047472 free,      524 used.  1354576 avail Mem
 
    PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
- 32360 systemd+  20   0   33136   3760   2340 S   3.3  0.2   0:07.30 nginx
- 36648 daemon    20   0  336696  16456   8780 S   3.3  0.8   0:05.74 php-fpm
- 36656 daemon    20   0  336696  16456   8780 S   3.3  0.8   0:05.56 php-fpm
- 36649 daemon    20   0  336696  16520   8844 S   3.0  0.8   0:05.78 php-fpm
- 36664 daemon    20   0  336696  16456   8780 S   3.0  0.8   0:05.69 php-fpm
- 36677 daemon    20   0  336696  16456   8780 S   3.0  0.8   0:05.61 php-fpm
- 32276 root      20   0  109104   6324   4784 S   2.7  0.3   0:05.09 containerd-shim
- 36647 root      20   0   32896   6096   4848 S   2.3  0.3   0:04.56 ab
- 29885 root      20   0 1277672 105792  47732 S   1.3  5.2   1:03.54 dockerd
-
-cpu占用最高的才3.3%，看起来并不高，但是整体cpu，us占72.4% ，sy占20.8%，id为4.7，，用户cpu占用率很高，达到72.4%，看看各个进程cpu占用率并不高，为啥总的us会很高，
-
-# pidstat 1
-
-2:49:44 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-12:49:45 PM     0     29885    0.00    0.99    0.00    0.00    0.99     1  dockerd
-12:49:45 PM     0     32276    1.98    0.00    0.00    0.00    1.98     0  containerd-shim
-12:49:45 PM   101     32360    0.00    3.96    0.00    1.98    3.96     1  nginx
-12:49:45 PM   101     32361    0.00    0.99    0.00    0.00    0.99     1  nginx
-12:49:45 PM     0     56045    0.99    1.98    0.00    0.99    2.97     1  ab
-12:49:45 PM     1     56046    0.00    2.97    0.00    1.98    2.97     0  php-fpm
-12:49:45 PM     1     56051    0.99    1.98    0.00    0.99    2.97     0  php-fpm
-12:49:45 PM     1     56057    0.00    2.97    0.00    1.98    2.97     0  php-fpm
-12:49:45 PM     1     56059    0.00    2.97    0.00    0.99    2.97     0  php-fpm
-12:49:45 PM     1     56072    0.00    2.97    0.00    1.98    2.97     0  php-fpm
-12:49:45 PM     1     61853    0.99    0.00    0.00    0.00    0.99     1  stress</code></pre><p><strong>看各个进程cpu占用率加起来远小于us，us很高，却找不到哪个进程，这是啥原因？</strong></p>
+    16 root      20   0       0      0      0 S  28.9  0.0   2:08.95 ksoftirqd/1
+  4452 root      20   0       0      0      0 Z  22.4  0.0   0:00.68 app
+  4453 root      20   0       0      0      0 Z  21.4  0.0   0:00.65 app
+  4330 root      20   0   43192   4264   3232 R   1.0  0.2   0:02.76 top
+   983 root      20   0  191840  11500  10020 S   0.7  0.6   1:01.13 vmtoolsd
+ 32400 root      20   0       0      0      0 I   0.7  0.0   0:10.08 kworker/0:0
+     8 root      20   0       0      0      0 I   0.3  0.0   0:18.87 rcu_sched
+</code></pre><p><strong>仔细观察top命令的输出结果，有以下几个特点：</strong></p>
 <ul>
-<li>回头看看top命令输出中tasks这个指标，running为6，感觉有点多，php-fpm进程才5个，加上nginx进程，看来也差不多，但是php和nginx都处于s，就是sleep状态，而处于R状态的出现了stress进程，好像没运行此应用啊，而且观察发现stress进程号时而出现，时而消失，pid在不断变化，这说明，这些进程在不停重启，或者新进程<br>原因基本是两种：</li>
+<li><p>load average 这个参数，1分钟，5分钟，15分钟的数据依次减小，说明平均负载正在升高，并且，1分钟内负载超过cpu个数2，说明系统可能出现了性能瓶颈</p>
+</li>
+<li><p>Tasks这一行，一个在运行，但僵尸进程很多，并且在不断增加，说明子进程退出时，资源没被清理，产生大量僵尸进程</p>
+</li>
+<li><p>cpu使用率，不高，但是iowait稍高，好像有点不正常</p>
+</li>
+<li><p>观察是否有处于D状态进程，由于本实验主机采用了ssd硬盘，出现iowait可能性不大，如果用机械硬盘，会有处于D状态进程，这一般是在等待io</p>
+</li>
+<li><p>问题汇总一下：<br>1.iowait高，导致平均负载高，甚至超过了cpu个数<br>2.僵尸进程不断增多，说明没有正确清理子进程资源</p>
+</li>
 </ul>
-<ol>
-<li>进程不停崩溃重启，进程退出，被监控系统自动重启</li>
-<li>这些进程是短时进程，，就是在其他应用内部通过exec调用外面的命令，这命令短时就结束，所以很难用top这类工具发现</li>
-</ol>
-<p>进程pid不断变化，看起来像是被其他进程调用的短时进程，要分析，需要找到它的父进程，可以使用pstree命令</p>
-<pre><code># pstree |grep stress
-        |            |-containerd-shim-+-php-fpm-+-2*[php-fpm---sh---stress]
-        |            |                 |         `-2*[php-fpm---sh---stress---stress]</code></pre><p><strong>看出stress是php调用的子进程，找到父进程之后，就去看app应用的代码</strong></p>
-<pre><code># docker cp phpfpm:/app .
-
-# grep stress -r app
-app/index.php:// fake I/O with stress (via write()/unlink()).
-app/index.php:$result = exec(&quot;/usr/local/bin/stress -t 1 -d 1 2&gt;&amp;1&quot;, $output, $status);
-
-使用一些常用工具没发现大量stress进程，我们可以使用perf工具
-perf record -g
-perf report
-
-进行进一步排查，当然需要一定的代码功底了，这里就不详细叙述了，最后定位是由于短时进程stress导致cpu us高，但整个分析很复杂，而且需要看懂代码逻辑，对于此类问题，有一个工具可以监控，就是execsnoop,项目地址：https://github.com/brendangregg/perf-tools/blob/master/execsnoop
-</code></pre><p><strong>总结</strong></p>
+<p><strong>问题处理</strong></p>
+<p><strong>因为机器配置原因，可能iowait没达到理想效果，故在此仅说一下处理思路问题</strong><br>1.使用dstat观察cpu和io情况，一般wai高，磁盘read会很大，说明wai高跟磁盘读请求有关<br>2.使用top观察处于D状态的进程，并找出这些进程的pid<br>3.使用pidstat -d  1 3  命令查看输出结果，观察一会，一般会找到问题进程</p>
+<p><strong>进程要访问磁盘，就要使用系统调用，为找到问题根源，就需要使用strace这种跟踪系统调用的工具</strong></p>
+<pre><code>strace -p pid  
+</code></pre><p><strong>运行此命令可能会报错，因为问题进程app已经处于Z状态，表示已经退出了，只不过处于僵尸态，故此会报错，但问题追踪还得继续，可以使用perf top ,perf record, perf report命令进行下一步操作，一般会找到问题根源</strong></p>
+<p><strong>僵尸进程处理</strong></p>
 <ul>
-<li>应用里面调用其他二进制程序，这些程序运行时间比较短，通过top类工具不易发现</li>
-<li>应用本身不停崩溃重启，而启动过程的资源初始化，很可能会占用相当多的cpu资源</li>
-<li>对于这类进程，可以用pstree，execsnoop工具进行分析</li>
+<li>此处说一下处理思路，出现僵尸进程，一般是要找出其父进程，然后在父进程中解决<ul>
+<li>找到父进程，一般使用pstree命令<pre><code>pstree -a -p -s &lt;pid&gt;
+</code></pre></li>
 </ul>
+</li>
+</ul>
+<pre><code>  - 查看父进程程序代码里面，对子进程结束的处理是否正确，如有问题，进行更正极客解决
 
+**总结**
+
+- iowait高不代表io有性能瓶颈
+- 系统中只有io类型的进程运行时，iowait也会很高，但实际上，磁盘的读写远远没有达到性能瓶颈的程度
+- 碰到iowait高，先用dstat，pidstat确认是不是磁盘io问题，，然后找出导致问题出现的进程
+- 等待io进程一般是不可中断状态，可以用ps命令找到D状态的进程，此进程为可疑进程，在本案例中，io操作后，进程变成了僵尸进程，所以不能用strace直接分析，这种情况，我们用了perf工具，逐步发现了问题所在
+- 僵尸进程的排查，使用pstree找出父进程，去看父进程代码，去寻找问题所在
+
+
+
+
+
+</code></pre>
             </div>
             <hr/>
 
@@ -441,7 +438,7 @@ perf report
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/">https://www.ik8s.cc/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/</a>
+                    <a href="https://www.ik8s.cc/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/">https://www.ik8s.cc/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -547,9 +544,10 @@ perf report
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
                 <a href="/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/">
                     <div class="card-image">
@@ -575,9 +573,9 @@ R：ru
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -586,6 +584,7 @@ R：ru
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -604,25 +603,30 @@ R：ru
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E4%B8%8A%E4%B8%8B%E6%96%87/">
+                <a href="/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="Linux系统优化之二：cpu上下文切换">
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="Linux系统优化之四：cpu使用率高，为啥找不到元凶？">
                         
-                        <span class="card-title">Linux系统优化之二：cpu上下文切换</span>
+                        <span class="card-title">Linux系统优化之四：cpu使用率高，为啥找不到元凶？</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
                             
-linux是一个多任务操作系统，它支持远大于cpu核心数的任务同时运行，当然，这些任务实际上并不是真正同时运行，操作系统在很短时间内，将cpu资源轮流分配给这些任务，造成多任务同时运行的错觉。每个任务运行前，cpu需要知道从哪里加载，从哪
+当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路
+
+案例实验环境说明
+以nginx+php服务为例，使用docker跑对应的服务
+
+案例操作及分析过程# 
                         
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
                             </span>
                         <span class="publish-author">
                             

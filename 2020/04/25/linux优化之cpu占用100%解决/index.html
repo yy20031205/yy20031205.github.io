@@ -425,14 +425,14 @@ KiB Swap:  2047996 total,  2047472 free,      524 used.  1293320 avail Mem
 <pre><code># perf top -g -p 30880   30880是php-fpm进程号
 按方向键切换到php-fpm，在按下回车键展开php-fpm调用关系，最终发现sqrt和add_function函数
 Samples: 205K of event &#39;cpu-clock&#39;, Event count (approx.): 3490439906
-  Children      Self  Shared Object       Symbol                                                               ◆
+  Children      Self  Shared Object       Symbol                                                               
 -   99.58%     0.00%  php-fpm             [.] zend_execute
- -   96.77%     4.19%  php-fpm             [.] execute_ex                                                       ▒
-   - 54.13% execute_ex                                                                                         ▒
-      - 20.41% 0x8c4a7c                                                                                        ▒
-           5.20% sqrt                                                                                          ▒
-      - 16.71% 0x98dea3                                                                                        ▒
-         - 4.73% 0x98dd97                                                                                      ▒
+ -   96.77%     4.19%  php-fpm             [.] execute_ex                                                       
+   - 54.13% execute_ex                                                                                         
+      - 20.41% 0x8c4a7c                                                                                        
+           5.20% sqrt                                                                                          
+      - 16.71% 0x98dea3                                                                                        
+         - 4.73% 0x98dd97                                                                                      
               4.68% add_function
 
 
