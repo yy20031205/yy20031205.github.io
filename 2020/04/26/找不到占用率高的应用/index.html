@@ -4,13 +4,14 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Linux优化实战之一：平均负载, Jemmy yang Blog">
-    <meta name="description" content="平均负载
-平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
+    <meta name="keywords" content="Linux系统优化之四：cpu使用率高，为啥找不到元凶？, Jemmy yang Blog">
+    <meta name="description" content="
+当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路
 
-可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
+案例实验环境说明
+以nginx+php服务为例，使用docker跑对应的服务
 
-不可中">
+案例操作及分析过程# ">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -18,7 +19,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Linux优化实战之一：平均负载 | Jemmy yang Blog</title>
+    <title>Linux系统优化之四：cpu使用率高，为啥找不到元凶？ | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -245,13 +246,13 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/4.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        Linux优化实战之一：平均负载
+                        Linux系统优化之四：cpu使用率高，为啥找不到元凶？
                     </div>
                 </div>
             </div>
@@ -290,7 +291,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2020-04-25
+                    2020-04-26
                 </div>
                 
 
@@ -299,14 +300,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.8k
+                    1.3k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    8 分
+                    6 分
                 </div>
                 
 				
@@ -322,126 +323,98 @@
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h4 id="平均负载"><a href="#平均负载" class="headerlink" title="平均负载"></a>平均负载</h4><ul>
-<li><p>平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系</p>
-</li>
-<li><p>可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程</p>
-</li>
-<li><p>不可中断状态：处于内核态关键流程中的进程，这些进程是不可被打断的，如等待硬件设备的io相应，ps命令看到的处于D状态的进程</p>
-<ul>
-<li>当一个进程向磁盘读写数据时，为保证数据一致性，在得到磁盘回复前，他是不能被其他进程或者中断打断的，这时候的进程就处于不可中断状态</li>
-</ul>
-</li>
-<li><p>当平均负载为2，在2个cpu上，意味着所有cpu被完全占用，在4个cpu上，意味着cpu有50%的空闲，在1个cpu上，意味着一半进程竞争不到cpu</p>
-</li>
-<li><p>平均负载最理想的情况是等于cpu个数</p>
-<blockquote>
-<p>获取cpu个数命令：</p>
+                <blockquote>
+<p>当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路</p>
 </blockquote>
-<pre><code>   # grep &#39;model name&#39; /proc/cpuinfo |wc -l</code></pre></li>
-<li><p>一般会给出1分钟，5分钟，10分钟三个时间内的负载情况</p>
-<ul>
-<li>如果三个时间段的值基本相同，或相差不大，那就说明系统负载很平稳</li>
-<li>如果1分钟内的负载远小于15分钟的。说明系统最近1分钟内的负载在减少，而过去15分钟内却有很高的负载</li>
-<li>如果1分钟内负载远大于15的，说明最近1分钟内负载在增加，这种增加可能是临时性的，也可能会持续下去，一旦1分钟内平均负载接近或超过cpu个数，就意味着系统正在发生过载问题，这就需要分析原因，进行优化了，一般平均负载高于cpu数量70%时，就要引起注意了，更好的办法是把系统的平均负载监控，根据历史数据，判断负载变化趋势，当负载有明显升高趋势时，就要进行分析了</li>
+<h4 id="案例实验环境说明"><a href="#案例实验环境说明" class="headerlink" title="案例实验环境说明"></a>案例实验环境说明</h4><ul>
+<li>以nginx+php服务为例，使用docker跑对应的服务</li>
 </ul>
-</li>
-<li><p>平均负载与cpu使用率：</p>
-<ul>
-<li>CPU使用率：单位时间内cpu繁忙情况</li>
-<li>对cpu密集型进程，使用大量cpu会导致平均负载升高，这时平均负载与cpu使用率是一致的</li>
-<li>io密集型进程，等待io进程会导致平均负载升高，但cpu使用率不一定高</li>
-<li>大量等待cpu进程调度也会导致平均负载升高，此时cpu使用率也会比较高</li>
-</ul>
-</li>
-</ul>
-<h4 id="平均负载分析案例"><a href="#平均负载分析案例" class="headerlink" title="平均负载分析案例"></a>平均负载分析案例</h4><blockquote>
-<p>使用iostat，mpstat，pidstat三个工具在Ubuntu系统上演示</p>
-</blockquote>
-<ul>
-<li><p>安装压力测试工具stress和工具包sysstat</p>
-<pre><code># apt install stress sysstat</code></pre></li>
-<li><p>测试场景1: cpu密集型应用</p>
-<ul>
-<li>开启三个终端，第一个终端运行stress命令<pre><code># stress --cpu 1 --timeout 600</code></pre></li>
-<li>第二个终端运行uptime命令<pre><code># watch -d uptime</code></pre></li>
-<li>第三个终端，运行mpstatmingl<pre><code># mpstat -P ALL 5   监控所以cpu，没5秒输出1次数据</code></pre></li>
-<li>第二个终端显示如下：此处会发现1分钟的平均负载会慢慢增加到1.00<pre><code>load average: 1.14, 0.95, 0.55</code></pre></li>
-<li>第三个终端效果如下：看到正好又一个cpu使用率为100%，但iowait为0<pre><code>04:44:22 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-04:44:27 PM  all   50.10    0.00    0.10    0.00    0.00    0.00    0.00    0.00    0.00   49.80
-04:44:27 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
-04:44:27 PM    1    0.20    0.00    0.20    0.00    0.00    0.00    0.00    0.00    0.00   99.60</code></pre></li>
-<li>终端4:<pre><code># pidstat -u 5 1  间隔5秒后输出一组数据
-04:52:39 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-04:52:44 PM     0     20175    0.00    0.20    0.00    0.00    0.20     0  mpstat
-04:52:44 PM     0     21649  100.00    0.00    0.00    0.00  100.00     1  stress    stress进程cpu占用率为100%</code></pre><blockquote>
-<p>场景1总结，终端1启动一个cpu占用100%的进程，终端2看到负载达到1.14，终端3看到一个cpu占用100%，但iowait为0，终端4，看出占用cpu 100%的是进程stress，以上可以发现导致占用率100%的进程是stress，平均负载升高是由于cpu占用率100%导致的</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li><p>场景2: I/O密集型进程</p>
-<ul>
-<li><p>终端1</p>
-<pre><code>stress -i 1 --timeout 600</code></pre></li>
-<li><p>终端2</p>
-<pre><code>watch -d upteme
+<h4 id="案例操作及分析过程"><a href="#案例操作及分析过程" class="headerlink" title="案例操作及分析过程"></a>案例操作及分析过程</h4><pre><code># docker run -it -d --name nginx -p 10000:80 feisky/nginx:sp
 
-load average: 0.87, 0.47, 0.46</code></pre></li>
-<li><p>终端3</p>
-<pre><code>mpstat -P ALL 5 1
+# docker run -it -d --name phpfpm --network container:nginx feisky/php-fpm:sp
 
-05:05:32 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-05:05:37 PM  all    0.70    0.00   49.45    0.00    0.00    0.00    0.00    0.00    0.00   49.85
-05:05:37 PM    0    0.20    0.00    0.40    0.00    0.00    0.00    0.00    0.00    0.00   99.40
-05:05:37 PM    1    1.40    0.00   98.60    77.53    0.00    0.00    0.00    0.00    0.00    0.00 cpu系统占用98.6%，iowaite77.53%</code></pre></li>
-<li><p>终端4</p>
-<pre><code>pidstat -u 5 1
+# curl http:10.0.11.12:10000   10.0.11.2是宿主机地址，访问返回下面这个表示容器运行成功
+It works!
 
-Average:      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-Average:        0     19355    0.00    0.20    0.00    0.00    0.20     -  kworker/0:0
-Average:        0     22133    1.20   98.80    0.00    0.00  100.00     -  stress        占用率高由stress进程导致
-Average:        0     22134    0.20    0.00    0.00    0.00    0.20     -  watch
-Average:        0     22144    0.00    0.20    0.00    0.00    0.20     -  mpstat
-Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidstat</code></pre><blockquote>
-<p>场景2总结：终端1模拟io压力，终端2显示1分钟平均负载0.87，终端3显示，一个cpu占用98.6%，来自系统占用（%sys），iowait高达77.53%，终端4，看出占用率最高的进程是stress，综上得出平均负载升高是因为iowait过高导致</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li><p>场景3: 大量进程的场景</p>
+# ab -c100 -n1000 http://10.0.11.12:10000/
+
+Concurrency Level:      100
+Time taken for tests:   7.439 seconds
+Complete requests:      1000
+Failed requests:        0
+Total transferred:      172000 bytes
+HTML transferred:       9000 bytes
+Requests per second:    134.43 [#/sec] (mean)
+Time per request:       743.867 [ms] (mean)
+Time per request:       7.439 [ms] (mean, across all concurrent requests)
+Transfer rate:          22.58 [Kbytes/sec] received
+
+nginx 每秒请求次数为134
+
+# ab -c 5 -t 600 http://10.0.11.12:10000/
+
+top命令：
+
+top - 12:44:53 up 10:55,  3 users,  load average: 5.15, 2.63, 1.07
+Tasks: 213 total,   6 running, 115 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 72.4 us, 20.8 sy,  0.0 ni,  4.7 id,  0.0 wa,  0.0 hi,  2.0 si,  0.0 st
+KiB Mem :  2017512 total,   415696 free,   548644 used,  1053172 buff/cache
+KiB Swap:  2047996 total,  2047472 free,      524 used.  1288324 avail Mem
+
+   PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+ 32360 systemd+  20   0   33136   3760   2340 S   3.3  0.2   0:07.30 nginx
+ 36648 daemon    20   0  336696  16456   8780 S   3.3  0.8   0:05.74 php-fpm
+ 36656 daemon    20   0  336696  16456   8780 S   3.3  0.8   0:05.56 php-fpm
+ 36649 daemon    20   0  336696  16520   8844 S   3.0  0.8   0:05.78 php-fpm
+ 36664 daemon    20   0  336696  16456   8780 S   3.0  0.8   0:05.69 php-fpm
+ 36677 daemon    20   0  336696  16456   8780 S   3.0  0.8   0:05.61 php-fpm
+ 32276 root      20   0  109104   6324   4784 S   2.7  0.3   0:05.09 containerd-shim
+ 36647 root      20   0   32896   6096   4848 S   2.3  0.3   0:04.56 ab
+ 29885 root      20   0 1277672 105792  47732 S   1.3  5.2   1:03.54 dockerd
+
+cpu占用最高的才3.3%，看起来并不高，但是整体cpu，us占72.4% ，sy占20.8%，id为4.7，，用户cpu占用率很高，达到72.4%，看看各个进程cpu占用率并不高，为啥总的us会很高，
+
+# pidstat 1
+
+2:49:44 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+12:49:45 PM     0     29885    0.00    0.99    0.00    0.00    0.99     1  dockerd
+12:49:45 PM     0     32276    1.98    0.00    0.00    0.00    1.98     0  containerd-shim
+12:49:45 PM   101     32360    0.00    3.96    0.00    1.98    3.96     1  nginx
+12:49:45 PM   101     32361    0.00    0.99    0.00    0.00    0.99     1  nginx
+12:49:45 PM     0     56045    0.99    1.98    0.00    0.99    2.97     1  ab
+12:49:45 PM     1     56046    0.00    2.97    0.00    1.98    2.97     0  php-fpm
+12:49:45 PM     1     56051    0.99    1.98    0.00    0.99    2.97     0  php-fpm
+12:49:45 PM     1     56057    0.00    2.97    0.00    1.98    2.97     0  php-fpm
+12:49:45 PM     1     56059    0.00    2.97    0.00    0.99    2.97     0  php-fpm
+12:49:45 PM     1     56072    0.00    2.97    0.00    1.98    2.97     0  php-fpm
+12:49:45 PM     1     61853    0.99    0.00    0.00    0.00    0.99     1  stress</code></pre><p><strong>看各个进程cpu占用率加起来远小于us，us很高，却找不到哪个进程，这是啥原因？</strong></p>
 <ul>
-<li><p>终端1:</p>
-<pre><code>stress -c 8 --timeout 600</code></pre></li>
-<li><p>终端2:</p>
-<pre><code>watch -d uptime
-
-7:18:05 up  1:17,  5 users,  load average: 6.58, 2.69, 1.37</code></pre></li>
-<li><p>终端3:</p>
-<pre><code>mpstat -P ALL 5
-05:22:27 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-05:22:32 PM  all  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
-05:22:32 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
-05:22:32 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</code></pre></li>
-<li><p>终端4:</p>
-<pre><code>pidstat -u 5 1
-
-05:19:08 PM   UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-05:19:13 PM     0     23074   24.85    0.00    0.00   74.75   24.85     0  stress
-05:19:13 PM     0     23075   24.65    0.00    0.00   74.55   24.65     1  stress
-05:19:13 PM     0     23076   24.85    0.00    0.00   74.75   24.85     1  stress
-05:19:13 PM     0     23077   24.85    0.00    0.00   74.95   24.85     1  stress
-05:19:13 PM     0     23078   24.85    0.00    0.00   74.75   24.85     1  stress
-05:19:13 PM     0     23079   24.85    0.00    0.00   74.35   24.85     0  stress
-05:19:13 PM     0     23080   24.85    0.00    0.00   74.55   24.85     0  stress
-05:19:13 PM     0     23081   24.85    0.00    0.00   74.55   24.85     0  stress
-05:19:13 PM     0     23319    0.00    0.20    0.00    0.20    0.20     0  pidstat
-</code></pre><blockquote>
-<p>场景3总结：终端1模拟8个进程运行，从终端2显示结果看出，cpu 1分钟平均负载高达6.58，终端3看出两个cpu占用率全部100%，终端4看出，8个stress进程争抢2个cpu资源，cpu等待时间高达74.75%，说明cpu过载</p>
-</blockquote>
-</li>
+<li>回头看看top命令输出中tasks这个指标，running为6，感觉有点多，php-fpm进程才5个，加上nginx进程，看来也差不多，但是php和nginx都处于s，就是sleep状态，而处于R状态的出现了stress进程，好像没运行此应用啊，而且观察发现stress进程号时而出现，时而消失，pid在不断变化，这说明，这些进程在不停重启，或者新进程<br>原因基本是两种：</li>
 </ul>
-</li>
+<ol>
+<li>进程不停崩溃重启，进程退出，被监控系统自动重启</li>
+<li>这些进程是短时进程，，就是在其他应用内部通过exec调用外面的命令，这命令短时就结束，所以很难用top这类工具发现</li>
+</ol>
+<p>进程pid不断变化，看起来像是被其他进程调用的短时进程，要分析，需要找到它的父进程，可以使用pstree命令</p>
+<pre><code># pstree |grep stress
+        |            |-containerd-shim-+-php-fpm-+-2*[php-fpm---sh---stress]
+        |            |                 |         `-2*[php-fpm---sh---stress---stress]</code></pre><p><strong>看出stress是php调用的子进程，找到父进程之后，就去看app应用的代码</strong></p>
+<pre><code># docker cp phpfpm:/app .
+
+# grep stress -r app
+app/index.php:// fake I/O with stress (via write()/unlink()).
+app/index.php:$result = exec(&quot;/usr/local/bin/stress -t 1 -d 1 2&gt;&amp;1&quot;, $output, $status);
+
+使用一些常用工具没发现大量stress进程，我们可以使用perf工具
+perf record -g
+perf report
+
+进行进一步排查，当然需要一定的代码功底了，这里就不详细叙述了，最后定位是由于短时进程stress导致cpu us高，但整个分析很复杂，而且需要看懂代码逻辑，对于此类问题，有一个工具可以监控，就是execsnoop,项目地址：https://github.com/brendangregg/perf-tools/blob/master/execsnoop
+</code></pre><p><strong>总结</strong></p>
+<ul>
+<li>应用里面调用其他二进制程序，这些程序运行时间比较短，通过top类工具不易发现</li>
+<li>应用本身不停崩溃重启，而启动过程的资源初始化，很可能会占用相当多的cpu资源</li>
+<li>对于这类进程，可以用pstree，execsnoop工具进行分析</li>
 </ul>
 
             </div>
@@ -468,7 +441,7 @@ Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidst
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">https://www.ik8s.cc/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/</a>
+                    <a href="https://www.ik8s.cc/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/">https://www.ik8s.cc/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -553,7 +526,7 @@ Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidst
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2020-04-25T00-00-00',
+        id: '2020-04-26T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -574,31 +547,36 @@ Average:        0     22840    0.00    0.20    0.00    0.00    0.20     -  pidst
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E5%8D%A0%E7%94%A8100%25%E8%A7%A3%E5%86%B3/">
+                <a href="/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Linux系统优化之三：如何处理cpu占用100%">
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="Linux系统优化之四：cpu使用率高，为啥找不到元凶？">
                         
-                        <span class="card-title">Linux系统优化之三：如何处理cpu占用100%</span>
+                        <span class="card-title">Linux系统优化之四：cpu使用率高，为啥找不到元凶？</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            cpu使用率linux通过proc这个虚拟文件系统，提供系统内部信息，/proc/stat提供的是系统cpu信息,可以使用以下命令查看：
-# cat /proc/stat |grep ^cpu
-cpu  241187 1658 242572
+                            
+当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路
+
+案例实验环境说明
+以nginx+php服务为例，使用docker跑对应的服务
+
+案例操作及分析过程# 
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -607,6 +585,7 @@ cpu  241187 1658 242572
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -625,29 +604,20 @@ cpu  241187 1658 242572
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2020/04/25/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">
+                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E4%B8%8A%E4%B8%8B%E6%96%87/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="MySQL实战之三：事务隔离">
+                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="Linux系统优化之二：cpu上下文切换">
                         
-                        <span class="card-title">MySQL实战之三：事务隔离</span>
+                        <span class="card-title">Linux系统优化之二：cpu上下文切换</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
                             
-本文是mysql实战专栏第三篇
-
-事务隔离，为什么你改了我还看不见？
-事务是要保证一组数据库操作，要么全部成功，要么全部失败，在mysql中，事务支持是在存储引擎层实现
-
-隔离性与隔离级别
-隔离性
-
-Atomicity:原子性
-Consi
+linux是一个多任务操作系统，它支持远大于cpu核心数的任务同时运行，当然，这些任务实际上并不是真正同时运行，操作系统在很短时间内，将cpu资源轮流分配给这些任务，造成多任务同时运行的错觉。每个任务运行前，cpu需要知道从哪里加载，从哪
                         
                     </div>
                     <div class="publish-info">

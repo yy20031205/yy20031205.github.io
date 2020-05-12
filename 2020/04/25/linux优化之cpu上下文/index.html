@@ -402,8 +402,9 @@ procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
  7  0      0 350592  14456 1253500    0    0     0     0 5674 1619777 15 86  0  0  0
  7  0      0 350592  14456 1253500    0    0     0     0 5197 1563957 14 86  0  0  0
  7  0      0 350592  14456 1253500    0    0     0     0 4767 1600961 14 86  0  0  0</code></pre><blockquote>
-<p>从终端2可以看出，cs（上下文切换）上升到153万，r（就绪队列）达到7，远超cpu个数2，所以会有大量cpu竞争，us和sy加起来达到100%，系统（sy）cpu占用率达到86%，说明cpu主要被系统（内核）占用，中断次数（in）达到5701，综上所述，系统的就绪队列过长，达到7，远大于cpu个数2，这会导致大量上下文切换，大量切换进而导致cpu系统占用过高，但到底是哪个进程导致的，需要进行下一步分析<br>中断次数达到5700，要查看中断情况，需要查看/proc/interrupts,如下所示，变化最快的是RES，达到230多万，这中断类型是重调度中断，这种类型表示，唤醒空闲状态cpu来调度新任务运行，在多处理器系统中，调度器用来分散任务到不同cpu机制，通常也被称为处理器中断<br><strong>查看中断情况：</strong></p>
+<p>从终端2可以看出，cs（上下文切换）上升到153万，r（就绪队列）达到7，远超cpu个数2，所以会有大量cpu竞争，us和sy加起来达到100%，系统（sy）cpu占用率达到86%，说明cpu主要被系统（内核）占用，中断次数（in）达到5701，综上所述，系统的就绪队列过长，达到7，远大于cpu个数2，这会导致大量上下文切换，大量切换进而导致cpu系统占用过高，但到底是哪个进程导致的，需要进行下一步分析<br>中断次数达到5700，要查看中断情况，需要查看/proc/interrupts,如下所示，变化最快的是RES，达到230多万，这中断类型是重调度中断，这种类型表示，唤醒空闲状态cpu来调度新任务运行，在多处理器系统中，调度器用来分散任务到不同cpu机制，通常也被称为处理器中断</p>
 </blockquote>
+<p><strong>查看中断情况：</strong></p>
 <pre><code># cat /proc/interrupts
 ....         CPU0       CPU1
 NMI:          0          0   Non-maskable interrupts
@@ -587,31 +588,35 @@ NMI:          0          0   Non-maskable interrupts
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E4%B8%8A%E4%B8%8B%E6%96%87/">
+                <a href="/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="Linux系统优化之二：cpu上下文切换">
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="Linux系统优化之四：cpu使用率高，为啥找不到元凶？">
                         
-                        <span class="card-title">Linux系统优化之二：cpu上下文切换</span>
+                        <span class="card-title">Linux系统优化之四：cpu使用率高，为啥找不到元凶？</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
                             
-linux是一个多任务操作系统，它支持远大于cpu核心数的任务同时运行，当然，这些任务实际上并不是真正同时运行，操作系统在很短时间内，将cpu资源轮流分配给这些任务，造成多任务同时运行的错觉。每个任务运行前，cpu需要知道从哪里加载，从哪
+当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路
+
+案例实验环境说明
+以nginx+php服务为例，使用docker跑对应的服务
+
+案例操作及分析过程# 
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-25
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -620,7 +625,6 @@ linux是一个多任务操作系统，它支持远大于cpu核心数的任务同
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
@@ -639,24 +643,21 @@ linux是一个多任务操作系统，它支持远大于cpu核心数的任务同
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%B9%B3%E5%9D%87%E8%B4%9F%E8%BD%BD/">
+                <a href="/2020/04/25/linux%E4%BC%98%E5%8C%96%E4%B9%8Bcpu%E5%8D%A0%E7%94%A8100%25%E8%A7%A3%E5%86%B3/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="Linux优化实战之一：平均负载">
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Linux系统优化之三：如何处理cpu占用100%">
                         
-                        <span class="card-title">Linux优化实战之一：平均负载</span>
+                        <span class="card-title">Linux系统优化之三：如何处理cpu占用100%</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            平均负载
-平均负载：是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和cpu使用率没直接关系
-
-可运行状态进程： 正在使用cpu或者正在等待使用cpu的进程，就是ps命令看到的处于R状态的进程
-
-不可中
+                            cpu使用率linux通过proc这个虚拟文件系统，提供系统内部信息，/proc/stat提供的是系统cpu信息,可以使用以下命令查看：
+# cat /proc/stat |grep ^cpu
+cpu  241187 1658 242572
                         
                     </div>
                     <div class="publish-info">
