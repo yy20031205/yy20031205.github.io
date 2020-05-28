@@ -4,16 +4,13 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Linux系统优化之四：如何处理大量不可中断进程和僵尸进程, Jemmy yang Blog">
+    <meta name="keywords" content="mysql技术内幕之innodb简介, Jemmy yang Blog">
     <meta name="description" content="
-之前的专栏讨论了cpu使用率高的问题，根据之前专栏的相关介绍，其实等待I/O的cpu使用率(简称iowait)升高，也是常见的性能问题，本文就讨论下这个问题
+本系列是mysql技术内幕-innodb存储引擎一书的笔记总结
 
-进程状态top工具显示结果说明
-
-top输出结果R列相关状态说明
-
-
-R：ru">
+一、Innodb存储引擎1.1 体系架构1.1.数据库文件.frm: myisam和innodb存储引擎的表结构文件
+.MYI: myisam存储引擎的表索引文件
+.MYD">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -21,7 +18,7 @@ R：ru">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Linux系统优化之四：如何处理大量不可中断进程和僵尸进程 | Jemmy yang Blog</title>
+    <title>mysql技术内幕之innodb简介 | Jemmy yang Blog</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -248,13 +245,13 @@ R：ru">
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/20.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/23.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        Linux系统优化之四：如何处理大量不可中断进程和僵尸进程
+                        mysql技术内幕之innodb简介
                     </div>
                 </div>
             </div>
@@ -293,7 +290,7 @@ R：ru">
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2020-04-26
+                    2020-05-26
                 </div>
                 
 
@@ -302,14 +299,14 @@ R：ru">
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    2.1k
+                    1.9k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    8 分
+                    7 分
                 </div>
                 
 				
@@ -326,94 +323,156 @@ R：ru">
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <blockquote>
-<p>之前的专栏讨论了cpu使用率高的问题，根据之前专栏的相关介绍，其实等待I/O的cpu使用率(简称iowait)升高，也是常见的性能问题，本文就讨论下这个问题</p>
+<p>本系列是mysql技术内幕-innodb存储引擎一书的笔记总结</p>
 </blockquote>
-<h3 id="进程状态"><a href="#进程状态" class="headerlink" title="进程状态"></a>进程状态</h3><p><strong>top工具显示结果说明</strong></p>
-<ul>
-<li>top输出结果R列相关状态说明</li>
-</ul>
-<ul>
-<li>R：running的缩写，表示进程在cpu就绪队列中，正在运行或者正在等待运行</li>
-<li>D：disk sleep缩写，也就是不可中断睡眠，表示进程在与硬件交互，且在交互过程中不允许被其他进程或中断打断</li>
-<li>Z：zombie缩写，僵尸进程，，就是进程结束了，但是其父进程还没有回收他的资源，比如进程描述符，pid等</li>
-<li>S：interruptible sleep缩写，就是可中断睡眠，表示进程因为某个事件被系统挂起，当进程的事件发生时，它会被唤醒并进入R状态</li>
-<li>I：idle的缩写，就是空闲状态，用在不可中断睡眠的内核线程上，硬件交互导致的不可中断进程用D表示，对于某些内核线程来说，他们可能实际并没有任何负载，用idle就是为了区分这种情况。D状态的进程会导致平均负载升高，I状态的进程不会</li>
-</ul>
-<p><strong>除了以上5个状态之外，还有下面两个状态</strong></p>
-<ul>
-<li>T：t，stopped或者traced缩写，表示进程处于暂停或跟踪状态。向一个进程发送SIGSTOP信号，该进程会变成暂停状态(stopped)，再发送SIGCONT信号，进程恢复运行，如果进程是终端里直接启动，则需要你用fg命令恢复到前台运行；当你用gdb调试一个进程时，再使用断点中断进程后，进程就变成跟踪状态(traced)，这也是一种特殊的暂停状态</li>
-<li>X：dead缩写，表示进程已经消亡，不会在top或ps中看到此进程</li>
-</ul>
-<p><strong>不可中断状态，是为保证进程数据与硬件状态一致，正常情况下，不可中断状态会在短时间内结束，所以，短时的不可中断状态，算正常现象，但如果系统或硬件发送故障，进程会长时间在不可中断睡眠状态，甚至导致出现大量不可中断睡眠进程，这时就要引起注意</strong></p>
-<p><strong>僵尸进程，是多进程应用很容易碰到的问题，正常情况，当一个进程创建了子进程，它应该通过系统调用wait()或waitpid()等待子进程结束，回收子进程资源；子进程结束，会向它的父进程发送SIGCHLD信号，所以，父进程还可以注册SIGCHLD信号处理函数，异步回收资源，如果父进程没这么做，或者子进程执行太快，父进程没来得及处理子进程状态，子进程就已经提前退出，那此时子进程就变成僵尸进程。通常僵尸进程持续时间较短，在父进程回收他的资源后就会消失，或者父进程退出后，由init进程回收后也会消亡，一旦父进程没有处理子进程的终止，还一直处于运行状态，那子进程就会一直处于僵尸状态，大量僵尸进程会用尽pid，导致新进程不能被创建，所以一定要避免</strong></p>
-<h3 id="案例分析"><a href="#案例分析" class="headerlink" title="案例分析"></a>案例分析</h3><p><strong>环境说明</strong></p>
-<ul>
-<li>使用docker运行应用，另外需要使用dstat工具</li>
-</ul>
-<p><strong>操作分析</strong></p>
-<pre><code># docker run -it -d --privileged --name=app feisky/app:iowait
-# ps aux |grep /app
-root       4030  0.0  0.0   4512  1620 pts/0    Ss+  17:18   0:00 /app
+<h2 id="一、Innodb存储引擎"><a href="#一、Innodb存储引擎" class="headerlink" title="一、Innodb存储引擎"></a>一、Innodb存储引擎</h2><h3 id="1-1-体系架构"><a href="#1-1-体系架构" class="headerlink" title="1.1 体系架构"></a>1.1 体系架构</h3><h4 id="1-1-数据库文件"><a href="#1-1-数据库文件" class="headerlink" title="1.1.数据库文件"></a>1.1.数据库文件</h4><pre><code>.frm: myisam和innodb存储引擎的表结构文件
+.MYI: myisam存储引擎的表索引文件
+.MYD: myisam存储引擎的表数据文件
+.ibd: innodb存储引擎的索引文件和数据文件
 
-Ss+ : S表示可中断睡眠状态，s表示此进程是一个会话领导进程，+表示前台进程组
-</code></pre><p><strong>进程组：表示一组相互关联的进程，比如每个子进程都是父进程所在组成员</strong><br><strong>会话：共享同一个控制终端的一个或多个进程组，ssh登陆服务器，就会打开一个控制终端，这个终端就对应一个会话，在终端运行的命令及其它们的子进程，就构成一个个进程组，后台运行的命令，构成后台进程组，在前台运行的命令，构成前台进程组</strong></p>
-<p><strong>运行top命令，按1，切换显示所以cpu使用情况</strong></p>
-<pre><code>top - 17:32:57 up 12:39,  3 users,  load average: 2.65, 2.45, 1.63
-Tasks: 537 total,   1 running,  96 sleeping,   0 stopped, 348 zombie
-%Cpu0  :  0.3 us, 23.4 sy,  0.0 ni, 34.4 id, 41.8 wa,  0.0 hi,  0.0 si,  0.0 st
-%Cpu1  :  0.3 us, 18.3 sy,  0.0 ni, 42.2 id,  3.8 wa,  0.0 hi, 35.3 si,  0.0 st
-KiB Mem :  2017512 total,   503812 free,   496220 used,  1017480 buff/cache
-KiB Swap:  2047996 total,  2047472 free,      524 used.  1354576 avail Mem
+mysql是单进程多线程架构，插件式存储引擎，存储引擎是基于表的
+每张表的存储是按主键顺序进行存放，若没显式指定主键，会字动生成6字节rowid作为主键
+myisam只缓存索引文件，数据文件的缓存由操作系统负责
 
-   PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
-    16 root      20   0       0      0      0 S  28.9  0.0   2:08.95 ksoftirqd/1
-  4452 root      20   0       0      0      0 Z  22.4  0.0   0:00.68 app
-  4453 root      20   0       0      0      0 Z  21.4  0.0   0:00.65 app
-  4330 root      20   0   43192   4264   3232 R   1.0  0.2   0:02.76 top
-   983 root      20   0  191840  11500  10020 S   0.7  0.6   1:01.13 vmtoolsd
- 32400 root      20   0       0      0      0 I   0.7  0.0   0:10.08 kworker/0:0
-     8 root      20   0       0      0      0 I   0.3  0.0   0:18.87 rcu_sched
-</code></pre><p><strong>仔细观察top命令的输出结果，有以下几个特点：</strong></p>
+mysql&gt; show engines\G </code></pre><h4 id="1-2主要线程介绍"><a href="#1-2主要线程介绍" class="headerlink" title="1.2主要线程介绍"></a>1.2主要线程介绍</h4><ul>
+<li><p>1.2.1 后台线程</p>
 <ul>
-<li><p>load average 这个参数，1分钟，5分钟，15分钟的数据依次减小，说明平均负载正在升高，并且，1分钟内负载超过cpu个数2，说明系统可能出现了性能瓶颈</p>
+<li><p>作用：刷新内存池中数据，将修改的数据刷写到磁盘，保证mysql异常情况下能恢复到正常运行状态</p>
 </li>
-<li><p>Tasks这一行，一个在运行，但僵尸进程很多，并且在不断增加，说明子进程退出时，资源没被清理，产生大量僵尸进程</p>
+<li><p>master thread：核心后台线程，将缓冲池中数据异步刷新到磁盘，保证数据一致性</p>
 </li>
-<li><p>cpu使用率，不高，但是iowait稍高，好像有点不正常</p>
+<li><p>io thread：使用了aio来处理写io请求，负责io请求回调处理</p>
+<pre><code>
+           &gt; show variables like &#39;innodb_%io_threads&#39;;
+            +-------------------------+-------+
+            | Variable_name           | Value |
+            +-------------------------+-------+
+            | innodb_read_io_threads  | 4     |
+            | innodb_write_io_threads | 4     |
+            +-------------------------+-------+
+           &gt; show engine innodb status\G   查看io thread情况
+
+            I/O thread 0 state: waiting for completed aio requests (insert buffer thread)
+            I/O thread 1 state: waiting for completed aio requests (log thread)
+            I/O thread 2 state: waiting for completed aio requests (read thread)
+            I/O thread 3 state: waiting for completed aio requests (read thread)
+            I/O thread 4 state: waiting for completed aio requests (read thread)
+            I/O thread 5 state: waiting for completed aio requests (read thread)
+            I/O thread 6 state: waiting for completed aio requests (write thread)
+            I/O thread 7 state: waiting for completed aio requests (write thread)
+            I/O thread 8 state: waiting for completed aio requests (write thread)
+            I/O thread 9 state: waiting for completed aio requests (write thread)</code></pre></li>
+<li><p>purge thread：作用是用来回收已经使用并分配的undo页，老版本该线程在master thread中，新版本可以使用独立的，需要在配置文件中设置</p>
+<pre><code>innodb_purge_threads=1
+&gt; show variables like &#39;innodb_purge_threads&#39;;
+    +----------------------+-------+
+    | Variable_name        | Value |
+    +----------------------+-------+
+    | innodb_purge_threads | 4     |
+    +----------------------+-------+</code></pre></li>
+<li><p>page cleaner thread: 从master thread中独立出来，负责脏页刷新</p>
 </li>
-<li><p>观察是否有处于D状态进程，由于本实验主机采用了ssd硬盘，出现iowait可能性不大，如果用机械硬盘，会有处于D状态进程，这一般是在等待io</p>
-</li>
-<li><p>问题汇总一下：<br>1.iowait高，导致平均负载高，甚至超过了cpu个数<br>2.僵尸进程不断增多，说明没有正确清理子进程资源</p>
-</li>
-</ul>
-<p><strong>问题处理</strong></p>
-<p><strong>因为机器配置原因，可能iowait没达到理想效果，故在此仅说一下处理思路问题</strong><br>1.使用dstat观察cpu和io情况，一般wai高，磁盘read会很大，说明wai高跟磁盘读请求有关<br>2.使用top观察处于D状态的进程，并找出这些进程的pid<br>3.使用pidstat -d  1 3  命令查看输出结果，观察一会，一般会找到问题进程</p>
-<p><strong>进程要访问磁盘，就要使用系统调用，为找到问题根源，就需要使用strace这种跟踪系统调用的工具</strong></p>
-<pre><code>strace -p pid  
-</code></pre><p><strong>运行此命令可能会报错，因为问题进程app已经处于Z状态，表示已经退出了，只不过处于僵尸态，故此会报错，但问题追踪还得继续，可以使用perf top ,perf record, perf report命令进行下一步操作，一般会找到问题根源</strong></p>
-<p><strong>僵尸进程处理</strong></p>
-<ul>
-<li>此处说一下处理思路，出现僵尸进程，一般是要找出其父进程，然后在父进程中解决<ul>
-<li>找到父进程，一般使用pstree命令<pre><code>pstree -a -p -s &lt;pid&gt;
-</code></pre></li>
 </ul>
 </li>
 </ul>
-<pre><code>  - 查看父进程程序代码里面，对子进程结束的处理是否正确，如有问题，进行更正极客解决
+<h4 id="1-3-内存"><a href="#1-3-内存" class="headerlink" title="1.3 内存"></a>1.3 内存</h4><ul>
+<li><p>1.3.1 缓冲池</p>
+<ul>
+<li><p>对页的修改，先修改缓冲池中的页，再以一定频率刷写到磁盘</p>
+</li>
+<li><p>刷写磁盘通过checkpoint机制完成</p>
+</li>
+<li><p>缓冲池中缓存的类型有：索引页，数据页，undo页，insert buffer，自适应哈希索引，锁信息，数据字典信息等</p>
+</li>
+<li><p>允许多个缓冲池，默认是1个</p>
+<pre><code>&gt; show variables like &#39;innodb_buffer_pool_instances&#39;;
+&gt; show engine innodb status\G   查看目前缓冲池情况
+也可以通过information_schema中的innodb_buffer_pool_stats表查看缓存状态</code></pre></li>
+<li><p>缓冲池管理使用改进的LRU算法</p>
+</li>
+<li><p>脏页：缓冲池中数据与磁盘数据不一样</p>
+</li>
+</ul>
+</li>
+<li><p>1.3.2 redo log buffer</p>
+<ul>
+<li>一般不需要设置太大，一般每秒钟刷新一次redo log buffer到redo log中，该值大小由innodb_log_buffer_size,默认8mb</li>
+<li>以下三种情况，会将buffer中内容刷写到磁盘redo log中<ul>
+<li>master thread每秒钟会刷写一次</li>
+<li>每个事务提交时会刷写</li>
+<li>当redo log buffer 剩余空间小于1/2，会刷写</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>1.3.2 额外内存池</p>
+<ul>
+<li>innodb对内存管理使用内存堆方式</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-4-checkpoint技术"><a href="#1-4-checkpoint技术" class="headerlink" title="1.4 checkpoint技术"></a>1.4 checkpoint技术</h4><ul>
+<li>为避免在缓冲中刷写磁盘时发生宕机，数据库普遍采用write ahead log策略，即当事务提交时，先写重做日志，再修改页。一旦宕机，通过redo log来完成数据恢复，这是acid中持久性的要求</li>
+<li>check point解决以下问题：<ul>
+<li>缩短数据库恢复时间</li>
+<li>缓冲池不够时，将脏页刷写到磁盘</li>
+<li>重做日志不可用，刷新脏页</li>
+</ul>
+</li>
+<li>数据库宕机，只需对checkpoint后的重做日志进行恢复，</li>
+<li>当进行LRU时，溢出的页若为脏页，那就要强制执行checkpoint，将脏页刷写到磁盘</li>
+<li>重做日志是循环使用的，不需要的数据可以被覆盖</li>
+<li>innodb通过lsn来标记版本，重做日志，每个页，checkpoint都有lsn，可以通过show engine innodb status来查看</li>
+<li>有两种checkpoint：<ul>
+<li>sharp checkpoint：在数据库关闭时将所有脏页都刷写到磁盘，这是默认的，即innodb_fast_shutdown=1</li>
+<li>fuzzy checkpoint：但在数据库运行时也使用sharp checkpoint，数据库可用性会收很大影响，此时使用fuzzy checkpoint进行页刷新，只刷新部分脏页，而不是所有脏页<ul>
+<li>以下情况会发生fuzzy checkpoint：<ul>
+<li>master thread checkpoint</li>
+<li>flush_lru_list checkpoint</li>
+<li>Async/sync flush checkpoint</li>
+<li>dirty page too much chekpoint: innodb_max_dirty_pages_pct参数控制，当脏页数大于该参数值，强制checkpoint，刷新一部分脏页到磁盘</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-5-innodb关键特性"><a href="#1-5-innodb关键特性" class="headerlink" title="1.5 innodb关键特性"></a>1.5 innodb关键特性</h4><ul>
+<li><p>insert buffer：在innodb中，主键是行唯一的标识符，行插入顺序是按主键递增的顺序插入，并不是所有主键插入都是顺序的，插入聚集索引一般是按顺序的，不需要磁盘的随机读取，一张表也会有辅助索引，这些索引插入不一定是顺序的</p>
+<ul>
+<li>对于非聚集索引的插入或更新，不是每一次直接插入到索引页中，而是先判断插入的非聚集索引是否在缓冲池中，在就直接插入，不在，则先放入一个insert buffer对象中</li>
+<li>insert buffer使用需要同时满足两个条件：索引是辅助索引，索引不是唯一的</li>
+</ul>
+</li>
+<li><p>change buffer：引入inset buffer，delete buffer， purge buffer</p>
+</li>
+<li><p>两次写：doublewrite</p>
+<ul>
+<li>数据库宕机，会通过重做日志进行恢复，但redo log中记录的是对页的物理操作，如偏移量800，写‘aaa’记录，如果这个页本身发生损坏，再进行重做是没意义的</li>
+<li>双写就是在apply重做日志之前，需要一个页的副本，当写入失效，先通过页的副本来还原该页，再进行重做</li>
+<li>innodb_doublewrite 可以设置是否使用doublewrite，在从服务器需要较快性能，可以关闭，需要数据高可靠性的数据库上应该开启此参数，如果文件系统提供了写失效的防范机制，也可以关闭</li>
+</ul>
+</li>
+<li><p>异步io</p>
+<h4 id="1-6-重要参数"><a href="#1-6-重要参数" class="headerlink" title="1.6 重要参数"></a>1.6 重要参数</h4></li>
+</ul>
+<pre><code>innodb_fast_shutdown
+  0:数据库关闭时，innodb需要完成所有的full purge和merge insert buffer操作，并将所有脏页刷写到磁盘。这需要一定时间，若进行innodb升级，必须设置为0，然后在关闭数据库
+  1:默认值，不需要完成full purge和merge insert buffer操作，但脏数据要刷写到磁盘
+  2: 不完成full purge和merge insert buffer操作，也不将脏页写入磁盘，而是写入日志文件。这样没有任何事务丢失，下次启动数据库，会进行恢复操作
+  某些情况，不需要进行完整恢复，如用户直到如何恢复，进行完整恢复时间会很长，这时可以用户自己进行恢复
 
-**总结**
+innodb_force_recovery：
+  0:默认为0，当发生需要恢复操作时，进行所有恢复操作，当不能有效恢复，如mysql crash，把错误写入到错误日志
+  1:忽略检查到的corrupt页
+  2:阻止master thread线程的运行，如master thread需要进行full purge，而这会导致mysql crash
+  3:不进行事务回滚操作
+  4:不进行insert buffer的合并操作
+  5:不查看undolog，innodb会将未提交的事务视为已提交
+  6:不进行前滚操作
 
-- iowait高不代表io有性能瓶颈
-- 系统中只有io类型的进程运行时，iowait也会很高，但实际上，磁盘的读写远远没有达到性能瓶颈的程度
-- 碰到iowait高，先用dstat，pidstat确认是不是磁盘io问题，，然后找出导致问题出现的进程
-- 等待io进程一般是不可中断状态，可以用ps命令找到D状态的进程，此进程为可疑进程，在本案例中，io操作后，进程变成了僵尸进程，所以不能用strace直接分析，这种情况，我们用了perf工具，逐步发现了问题所在
-- 僵尸进程的排查，使用pstree找出父进程，去看父进程代码，去寻找问题所在
-
-
-
-
-
-</code></pre>
+  设置大于0的值，可以对表进行select，create，drop。但insert，update，delete操作</code></pre>
             </div>
             <hr/>
 
@@ -438,7 +497,7 @@ KiB Swap:  2047996 total,  2047472 free,      524 used.  1354576 avail Mem
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/">https://www.ik8s.cc/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/</a>
+                    <a href="https://www.ik8s.cc/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8Binnodb%E7%AE%80%E4%BB%8B/">https://www.ik8s.cc/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8Binnodb%E7%AE%80%E4%BB%8B/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -523,7 +582,7 @@ KiB Swap:  2047996 total,  2047472 free,      524 used.  1354576 avail Mem
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2020-04-26T00-00-00',
+        id: '2020-05-26T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -544,9 +603,61 @@ KiB Swap:  2047996 total,  2047472 free,      524 used.  1354576 avail Mem
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
+            <div class="card">
+                <a href="/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8Binnodb%E7%AE%80%E4%BB%8B/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="mysql技术内幕之innodb简介">
+                        
+                        <span class="card-title">mysql技术内幕之innodb简介</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+本系列是mysql技术内幕-innodb存储引擎一书的笔记总结
+
+一、Innodb存储引擎1.1 体系架构1.1.数据库文件.frm: myisam和innodb存储引擎的表结构文件
+.MYI: myisam存储引擎的表索引文件
+.MYD
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-05-26
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            BY 木易杨
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                        <span class="chip bg-color">专栏</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
             <div class="card">
                 <a href="/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/">
                     <div class="card-image">
@@ -571,59 +682,8 @@ KiB Swap:  2047996 total,  2047472 free,      524 used.  1354576 avail Mem
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2020-05-26
-                        </span>
-                        <span class="publish-author">
-                            
-                            <i class="fas fa-user fa-fw"></i>
-                            BY 木易杨
-                            
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/%E4%B8%93%E6%A0%8F/">
-                        <span class="chip bg-color">专栏</span>
-                    </a>
-                    
-                </div>
-                
-            </div>
-        </div>
-        
-        
-        <div class="article col s12 m6" data-aos="fade-up">
-            <div class="article-badge right-badge text-color">
-                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
-            </div>
-            <div class="card">
-                <a href="/2020/04/26/%E6%89%BE%E4%B8%8D%E5%88%B0%E5%8D%A0%E7%94%A8%E7%8E%87%E9%AB%98%E7%9A%84%E5%BA%94%E7%94%A8/">
-                    <div class="card-image">
-                        
-                        
-                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="Linux系统优化之四：cpu使用率高，为啥找不到元凶？">
-                        
-                        <span class="card-title">Linux系统优化之四：cpu使用率高，为啥找不到元凶？</span>
-                    </div>
-                </a>
-                <div class="card-content article-content">
-                    <div class="summary block-with-text">
-                        
-                            
-当你发现系统cpu使用率很高的时候，不一定能找到相对应的高cpu使用率进程，本文就是讨论这样问题的，以一个实例逐步分析，给出解决思路
-
-案例实验环境说明
-以nginx+php服务为例，使用docker跑对应的服务
-
-案例操作及分析过程# 
-                        
-                    </div>
-                    <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-05-26
                             </span>
                         <span class="publish-author">
                             
