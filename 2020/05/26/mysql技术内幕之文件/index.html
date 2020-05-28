@@ -5,11 +5,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="keywords" content="mysql技术内幕之文件, Jemmy yang Blog">
-    <meta name="description" content="
-layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26author:     BY 木易杨tags:    - 专栏—cd 
-二、文件2.1 日志文件
+    <meta name="description" content="二、文件2.1 日志文件
 错误日志
-位置查看">
+位置查看：show variables like ‘log_error’
+默认文件名是当前服务器主机名.err
+
+
+二进制日志
+记录了对数据库进行更改的所有操作，若操作本身没导致数据变化，也会写入二进制日">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -271,9 +274,13 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
             <div class="row tag-cate">
                 <div class="col s7">
                     
-                          <div class="article-tag">
-                            <span class="chip bg-color">无标签</span>
-                          </div>
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                                <span class="chip bg-color">专栏</span>
+                            </a>
+                        
+                    </div>
                     
                 </div>
                 <div class="col s5 right-align">
@@ -285,7 +292,7 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2020-05-28
+                    2020-05-26
                 </div>
                 
 
@@ -317,9 +324,7 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <hr>
-<p>layout:     post<br>title:      mysql技术内幕之文件<br>date:       2020-5-26<br>author:     BY 木易杨<br>tags:<br>    - 专栏<br>—cd </p>
-<h2 id="二、文件"><a href="#二、文件" class="headerlink" title="二、文件"></a>二、文件</h2><h4 id="2-1-日志文件"><a href="#2-1-日志文件" class="headerlink" title="2.1 日志文件"></a>2.1 日志文件</h4><ul>
+                <h2 id="二、文件"><a href="#二、文件" class="headerlink" title="二、文件"></a>二、文件</h2><h4 id="2-1-日志文件"><a href="#2-1-日志文件" class="headerlink" title="2.1 日志文件"></a>2.1 日志文件</h4><ul>
 <li>错误日志<ul>
 <li>位置查看：show variables like ‘log_error’</li>
 <li>默认文件名是当前服务器主机名.err</li>
@@ -398,7 +403,7 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc" rel="external nofollow noreferrer">Jemmy yang</a>
+                    <a href="https://www.ik8s.cc" rel="external nofollow noreferrer">BY 木易杨</a>
                 </span>
             </div>
             <div class="reprint__type">
@@ -408,7 +413,7 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://www.ik8s.cc/2020/05/28/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/">https://www.ik8s.cc/2020/05/28/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/</a>
+                    <a href="https://www.ik8s.cc/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/">https://www.ik8s.cc/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -421,7 +426,7 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
                     本博客所有文章除特別声明外，均采用
                     <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
                     许可协议。转载请注明来源
-                    <a href="https://www.ik8s.cc" target="_blank">Jemmy yang</a>
+                    <a href="https://www.ik8s.cc" target="_blank">BY 木易杨</a>
                     !
                 </span>
             </div>
@@ -445,7 +450,11 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
                 <div class="post-meta__tag-list" style="display: inline-block;">
                     
                         <div class="article-tag">
-                            <span class="chip bg-color">无标签</span>
+                            
+                                <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                                    <span class="chip bg-color">专栏</span>
+                                </a>
+                            
                         </div>
                     
                 </div>
@@ -489,7 +498,7 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
         repo: 'yy20031205.github.io',
         owner: 'yy20031205',
         admin: "yy20031205",
-        id: '2020-05-28T20-43-58',
+        id: '2020-05-26T00-00-00',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -510,52 +519,9 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
-            <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
-            <div class="card">
-                <a href="/2020/05/28/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/">
-                    <div class="card-image">
-                        
-                        
-                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="mysql技术内幕之文件">
-                        
-                        <span class="card-title">mysql技术内幕之文件</span>
-                    </div>
-                </a>
-                <div class="card-content article-content">
-                    <div class="summary block-with-text">
-                        
-                            
-layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26author:     BY 木易杨tags:    - 专栏—cd 
-二、文件2.1 日志文件
-错误日志
-位置查看
-                        
-                    </div>
-                    <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-05-28
-                            </span>
-                        <span class="publish-author">
-                            
-                            <i class="fas fa-user fa-fw"></i>
-                            Jemmy yang
-                            
-                        </span>
-                    </div>
-                </div>
-
-                
-            </div>
-        </div>
-        
-        
         <div class="article col s12 m6" data-aos="fade-up">
-            <div class="article-badge right-badge text-color">
-                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
-            </div>
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
                 <a href="/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8Binnodb%E7%AE%80%E4%BB%8B/">
                     <div class="card-image">
@@ -578,8 +544,61 @@ layout:     posttitle:      mysql技术内幕之文件date:       2020-5-26autho
                         
                     </div>
                     <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2020-05-26
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            BY 木易杨
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%B8%93%E6%A0%8F/">
+                        <span class="chip bg-color">专栏</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="Linux系统优化之四：如何处理大量不可中断进程和僵尸进程">
+                        
+                        <span class="card-title">Linux系统优化之四：如何处理大量不可中断进程和僵尸进程</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+之前的专栏讨论了cpu使用率高的问题，根据之前专栏的相关介绍，其实等待I/O的cpu使用率(简称iowait)升高，也是常见的性能问题，本文就讨论下这个问题
+
+进程状态top工具显示结果说明
+
+top输出结果R列相关状态说明
+
+
+R：ru
+                        
+                    </div>
+                    <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-05-26
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
                             </span>
                         <span class="publish-author">
                             
