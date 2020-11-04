@@ -578,32 +578,32 @@ mysqlbing binlog.0000001 &gt; /tmp/test.sql
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2020/04/26/linux%E4%BC%98%E5%8C%96%E4%B9%8B%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%A4%84%E7%90%86/">
+                <a href="/2020/05/26/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%E4%B9%8B%E6%96%87%E4%BB%B6/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="Linux系统优化之四：如何处理大量不可中断进程和僵尸进程">
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="mysql技术内幕之文件">
                         
-                        <span class="card-title">Linux系统优化之四：如何处理大量不可中断进程和僵尸进程</span>
+                        <span class="card-title">mysql技术内幕之文件</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary block-with-text">
                         
-                            
-之前的专栏讨论了cpu使用率高的问题，根据之前专栏的相关介绍，其实等待I/O的cpu使用率(简称iowait)升高，也是常见的性能问题，本文就讨论下这个问题
-
-进程状态top工具显示结果说明
-
-top输出结果R列相关状态说明
+                            文件1.1 日志文件
+错误日志
+位置查看：show variables like ‘log_error’
+默认文件名是当前服务器主机名.err
 
 
-R：ru
+二进制日志
+记录了对数据库进行更改的所有操作，若操作本身没导致数据变化，也会写入二进制日志
+
                         
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2020-04-26
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-05-26
                             </span>
                         <span class="publish-author">
                             
